@@ -1,4 +1,9 @@
-const API_BASE_URL = 'http://localhost:5000';
+// Prefer Vite env at runtime; fall back to process.env (tests/CI); default to localhost
+const API_BASE_URL = (
+  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE
+) || (
+  typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE
+) || 'http://98.87.68.144:5000';
 
 class ApiService {
   constructor() {
