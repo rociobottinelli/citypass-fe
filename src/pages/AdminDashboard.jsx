@@ -46,6 +46,11 @@ function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(null)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [totalPages, setTotalPages] = useState(1)
 
   // Load emergencies from API
   useEffect(() => {
@@ -55,23 +60,43 @@ function AdminDashboard() {
         console.log('Emergencies from API:', emergencies);
         
         // Map API data to frontend format (backend already filters by role)
-        const mappedEmergencies = emergencies.map(emergency => ({
-          id: emergency._id,
-          timestamp: new Date(emergency.timestamp || emergency.createdAt),
-          tipo: emergency.tipoEmergencia,
-          ubicacion: emergency.ubicacion?.direccion || 'Ubicación no disponible',
-          estado: emergency.estado,
-          servicios: getServicesFromType(emergency.tipoEmergencia),
-          ciudadano: `Usuario ${emergency.idUsuario?.slice(-4) || 'Desconocido'}`,
-          telefono: 'No disponible',
-          detalles: emergency.descripcion || 'Sin descripción',
-          prioridad: emergency.prioridad,
-          coordenadas: emergency.ubicacion?.lat && emergency.ubicacion?.lon 
-            ? { lat: emergency.ubicacion.lat, lng: emergency.ubicacion.lon }
-            : null,
-          origen: emergency.origen,
-          adjuntos: emergency.adjuntos || []
-        }));
+        const mappedEmergencies = emergencies.map(emergency => {
+          console.log('Emergency ubicacion structure:', emergency.ubicacion);
+          
+          // Handle location based on the actual API structure
+          let ubicacion = 'Ubicación no disponible';
+          let coordenadas = null;
+          
+          if (emergency.ubicacion) {
+            if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
+              // If coordinates are available, show them with precision
+              const lat = emergency.ubicacion.lat.toFixed(6);
+              const lon = emergency.ubicacion.lon.toFixed(6);
+              ubicacion = `${lat}, ${lon}`;
+              coordenadas = { lat: emergency.ubicacion.lat, lng: emergency.ubicacion.lon };
+            } else {
+              ubicacion = 'Ubicación no disponible';
+            }
+          } else {
+            ubicacion = 'Ubicación no disponible';
+          }
+          
+          return {
+            id: emergency._id,
+            timestamp: new Date(emergency.timestamp || emergency.createdAt),
+            tipo: emergency.tipoEmergencia,
+            ubicacion,
+            coordenadas,
+            estado: emergency.estado,
+            servicios: getServicesFromType(emergency.tipoEmergencia),
+            ciudadano: `Usuario ${emergency.idUsuario?.slice(-4) || 'Desconocido'}`,
+            telefono: 'No disponible',
+            detalles: emergency.descripcion || 'Sin descripción',
+            prioridad: emergency.prioridad,
+            origen: emergency.origen,
+            adjuntos: emergency.adjuntos || []
+          };
+        });
         
         console.log('Mapped emergencies:', mappedEmergencies);
         setEmergencies(mappedEmergencies);
@@ -184,7 +209,14 @@ function AdminDashboard() {
     }
 
     setFilteredEmergencies(filtered)
-  }, [emergencies, filter, searchTerm])
+    
+    // Calculate total pages
+    const totalPages = Math.ceil(filtered.length / itemsPerPage)
+    setTotalPages(totalPages)
+    
+    // Reset to first page when filters change
+    setCurrentPage(1)
+  }, [emergencies, filter, searchTerm, itemsPerPage])
 
   // Helper function to map emergency type to services
   const getServicesFromType = (tipoEmergencia) => {
@@ -234,7 +266,11 @@ function AdminDashboard() {
 
   const updateEmergencyStatus = async (emergencyId, newStatus) => {
     try {
-      await apiService.updateEmergencyStatus(emergencyId, newStatus);
+      console.log(`Updating emergency ${emergencyId} status to: ${newStatus}`);
+      
+      const response = await apiService.updateEmergencyStatus(emergencyId, newStatus);
+      console.log('API response:', response);
+      
       setEmergencies(prev => 
         prev.map(emergency => 
           emergency.id === emergencyId 
@@ -253,6 +289,29 @@ function AdminDashboard() {
     } catch (error) {
       console.error('Error updating emergency status:', error);
       alert(`Error al actualizar estado: ${error.message}`);
+    }
+  }
+
+  // Pagination functions
+  const getCurrentPageData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredEmergencies.slice(startIndex, endIndex)
+  }
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+  }
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
     }
   }
 
@@ -429,7 +488,30 @@ function AdminDashboard() {
                           
                           <div className="flex items-center gap-1 text-sm text-gray-600">
                             <MapPin className="w-4 h-4 text-red-500" />
-                            <span className="font-medium">{latestEmergency.ubicacion}</span>
+                            {(() => {
+                              console.log('Latest emergency ubicacion:', latestEmergency.ubicacion);
+                              const isCoordinates = latestEmergency.ubicacion && 
+                                latestEmergency.ubicacion.includes(',') && 
+                                !latestEmergency.ubicacion.includes('Ubicación') && 
+                                !latestEmergency.ubicacion.includes('no disponible');
+                              console.log('Is coordinates:', isCoordinates);
+                              return isCoordinates;
+                            })() ? (
+                              <button
+                                onClick={() => {
+                                  const [lat, lon] = latestEmergency.ubicacion.split(', ');
+                                  const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                  console.log('Opening Google Maps:', googleMapsUrl);
+                                  window.open(googleMapsUrl, '_blank');
+                                }}
+                                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors font-medium"
+                                title="Click para abrir en Google Maps"
+                              >
+                                {latestEmergency.ubicacion}
+                              </button>
+                            ) : (
+                              <span className="font-medium">{latestEmergency.ubicacion}</span>
+                            )}
                           </div>
                           
                           {latestEmergency.detalles && (
@@ -492,7 +574,27 @@ function AdminDashboard() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-gray-500">Ubicación</label>
-                                  <p className="text-sm">{latestEmergency.ubicacion}</p>
+                                  {(() => {
+                                    const isCoordinates = latestEmergency.ubicacion && 
+                                      latestEmergency.ubicacion.includes(',') && 
+                                      !latestEmergency.ubicacion.includes('Ubicación') && 
+                                      !latestEmergency.ubicacion.includes('no disponible');
+                                    return isCoordinates;
+                                  })() ? (
+                                    <button
+                                      onClick={() => {
+                                        const [lat, lon] = latestEmergency.ubicacion.split(', ');
+                                        const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                        window.open(googleMapsUrl, '_blank');
+                                      }}
+                                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
+                                      title="Click para abrir en Google Maps"
+                                    >
+                                      {latestEmergency.ubicacion}
+                                    </button>
+                                  ) : (
+                                    <p className="text-sm">{latestEmergency.ubicacion}</p>
+                                  )}
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-gray-500">Ciudadano</label>
@@ -593,7 +695,7 @@ function AdminDashboard() {
                       No se encontraron emergencias con los filtros aplicados
                     </div>
                   ) : (
-                    filteredEmergencies.map((emergency) => (
+                    getCurrentPageData().map((emergency) => (
                       <div key={emergency.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                           <div className="flex-1">
@@ -619,7 +721,30 @@ function AdminDashboard() {
                             
                             <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                               <MapPin className="w-4 h-4" />
-                              <span>{emergency.ubicacion}</span>
+                              {(() => {
+                                console.log('Emergency ubicacion:', emergency.ubicacion);
+                                const isCoordinates = emergency.ubicacion && 
+                                  emergency.ubicacion.includes(',') && 
+                                  !emergency.ubicacion.includes('Ubicación') && 
+                                  !emergency.ubicacion.includes('no disponible');
+                                console.log('Is coordinates:', isCoordinates);
+                                return isCoordinates;
+                              })() ? (
+                                <button
+                                  onClick={() => {
+                                    const [lat, lon] = emergency.ubicacion.split(', ');
+                                    const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                    console.log('Opening Google Maps:', googleMapsUrl);
+                                    window.open(googleMapsUrl, '_blank');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors"
+                                  title="Click para abrir en Google Maps"
+                                >
+                                  {emergency.ubicacion}
+                                </button>
+                              ) : (
+                                <span>{emergency.ubicacion}</span>
+                              )}
                             </div>
                             
                             <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -686,7 +811,27 @@ function AdminDashboard() {
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-muted-foreground">Ubicación</label>
-                                    <p className="text-sm">{emergency.ubicacion}</p>
+                                    {(() => {
+                                      const isCoordinates = emergency.ubicacion && 
+                                        emergency.ubicacion.includes(',') && 
+                                        !emergency.ubicacion.includes('Ubicación') && 
+                                        !emergency.ubicacion.includes('no disponible');
+                                      return isCoordinates;
+                                    })() ? (
+                                      <button
+                                        onClick={() => {
+                                          const [lat, lon] = emergency.ubicacion.split(', ');
+                                          const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                          window.open(googleMapsUrl, '_blank');
+                                        }}
+                                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
+                                        title="Click para abrir en Google Maps"
+                                      >
+                                        {emergency.ubicacion}
+                                      </button>
+                                    ) : (
+                                      <p className="text-sm">{emergency.ubicacion}</p>
+                                    )}
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-muted-foreground">Ciudadano</label>
@@ -730,6 +875,55 @@ function AdminDashboard() {
                         </div>
                       </div>
                     ))
+                  )}
+                  
+                  {/* Pagination */}
+                  {filteredEmergencies.length > itemsPerPage && (
+                    <div className="flex items-center justify-between px-4 py-3 border-t">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <span>
+                          Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredEmergencies.length)} de {filteredEmergencies.length} emergencias
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handlePreviousPage}
+                          disabled={currentPage === 1}
+                          className="flex items-center gap-1"
+                        >
+                          <span>←</span>
+                          Anterior
+                        </Button>
+                        
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => handlePageChange(page)}
+                              className="w-8 h-8 p-0"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleNextPage}
+                          disabled={currentPage === totalPages}
+                          className="flex items-center gap-1"
+                        >
+                          Siguiente
+                          <span>→</span>
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </CardContent>

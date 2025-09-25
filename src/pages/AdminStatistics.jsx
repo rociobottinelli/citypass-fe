@@ -40,18 +40,41 @@ function AdminStatistics() {
         console.log('Emergencies from API:', emergencies);
         
         // Map API data to frontend format (backend already filters by role)
-        const mappedEmergencies = emergencies.map(emergency => ({
-          id: emergency._id,
-          timestamp: new Date(emergency.timestamp || emergency.createdAt),
-          tipo: emergency.tipoEmergencia,
-          ubicacion: emergency.ubicacion?.direccion || 'Ubicación no disponible',
-          estado: emergency.estado,
-          servicios: getServicesFromType(emergency.tipoEmergencia),
-          ciudadano: `Usuario ${emergency.idUsuario?.slice(-4) || 'Desconocido'}`,
-          detalles: emergency.descripcion || 'Sin descripción',
-          prioridad: emergency.prioridad,
-          origen: emergency.origen
-        }));
+        const mappedEmergencies = emergencies.map(emergency => {
+          console.log('Emergency ubicacion structure:', emergency.ubicacion);
+          
+          // Handle location based on the actual API structure
+          let ubicacion = 'Ubicación no disponible';
+          let coordenadas = null;
+          
+          if (emergency.ubicacion) {
+            if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
+              // If coordinates are available, show them with precision
+              const lat = emergency.ubicacion.lat.toFixed(6);
+              const lon = emergency.ubicacion.lon.toFixed(6);
+              ubicacion = `${lat}, ${lon}`;
+              coordenadas = { lat: emergency.ubicacion.lat, lng: emergency.ubicacion.lon };
+            } else {
+              ubicacion = 'Ubicación no disponible';
+            }
+          } else {
+            ubicacion = 'Ubicación no disponible';
+          }
+          
+          return {
+            id: emergency._id,
+            timestamp: new Date(emergency.timestamp || emergency.createdAt),
+            tipo: emergency.tipoEmergencia,
+            ubicacion,
+            coordenadas,
+            estado: emergency.estado,
+            servicios: getServicesFromType(emergency.tipoEmergencia),
+            ciudadano: `Usuario ${emergency.idUsuario?.slice(-4) || 'Desconocido'}`,
+            detalles: emergency.descripcion || 'Sin descripción',
+            prioridad: emergency.prioridad,
+            origen: emergency.origen
+          };
+        });
         
         // Calculate stats from real data
         const today = new Date();
@@ -342,7 +365,30 @@ function AdminStatistics() {
                     
                     <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mb-2">
                       <MapPin className="w-3 h-3" />
-                      <span className="truncate">{emergency.ubicacion}</span>
+                      {(() => {
+                        console.log('Emergency ubicacion:', emergency.ubicacion);
+                        const isCoordinates = emergency.ubicacion && 
+                          emergency.ubicacion.includes(',') && 
+                          !emergency.ubicacion.includes('Ubicación') && 
+                          !emergency.ubicacion.includes('no disponible');
+                        console.log('Is coordinates:', isCoordinates);
+                        return isCoordinates;
+                      })() ? (
+                        <button
+                          onClick={() => {
+                            const [lat, lon] = emergency.ubicacion.split(', ');
+                            const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                            console.log('Opening Google Maps:', googleMapsUrl);
+                            window.open(googleMapsUrl, '_blank');
+                          }}
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors truncate"
+                          title="Click para abrir en Google Maps"
+                        >
+                          {emergency.ubicacion}
+                        </button>
+                      ) : (
+                        <span className="truncate">{emergency.ubicacion}</span>
+                      )}
                     </div>
                     
                     <div className="flex flex-wrap gap-1">

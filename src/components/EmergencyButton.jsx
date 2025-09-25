@@ -139,15 +139,28 @@ const EmergencyButton = () => {
         console.log('Emergency created:', response);
       } else {
         // Detailed form emergency
+        console.log('Creating detailed emergency with:', {
+          userId: user.id,
+          selectedType,
+          emergencyDetails: emergencyDetails || 'EMPTY DESCRIPTION',
+          location,
+          selectedServices,
+          attachments
+        });
+        
+        // Force a description if empty
+        const descriptionToSend = emergencyDetails || 'Emergencia reportada desde formulario';
+        console.log('Description being sent:', descriptionToSend);
+        
         emergencyData = apiService.createFormEmergencyData(
           user.id,
           selectedType,
-          emergencyDetails,
+          descriptionToSend,
           location,
           selectedServices,
           attachments
         );
-        const response = await apiService.createEmergency(emergencyData);
+        const response = await apiService.createEmergencyWithForm(emergencyData);
         console.log('Detailed emergency created:', response);
       }
 
@@ -456,7 +469,10 @@ const EmergencyButton = () => {
               <h3 className="text-base sm:text-lg font-semibold">Detalles Adicionales (Opcional)</h3>
               <textarea
                 value={emergencyDetails}
-                onChange={(e) => setEmergencyDetails(e.target.value)}
+                onChange={(e) => {
+                  console.log('Description changed:', e.target.value);
+                  setEmergencyDetails(e.target.value);
+                }}
                 placeholder="Describe brevemente la situación de emergencia..."
                 className="w-full p-3 border border-gray-300 rounded-lg resize-none text-sm sm:text-base"
                 rows={3}

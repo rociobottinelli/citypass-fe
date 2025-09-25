@@ -45,23 +45,43 @@ function OperadorDashboard() {
         console.log('Emergencies from API:', emergencies);
         
         // Map API data to frontend format (backend already filters by role)
-        const mappedEmergencies = emergencies.map(emergency => ({
-          id: emergency._id,
-          timestamp: new Date(emergency.timestamp || emergency.createdAt),
-          tipo: emergency.tipoEmergencia,
-          ubicacion: emergency.ubicacion?.direccion || 'Ubicación no disponible',
-          estado: emergency.estado,
-          servicios: getServicesFromType(emergency.tipoEmergencia),
-          ciudadano: `Usuario ${emergency.idUsuario?.slice(-4) || 'Desconocido'}`,
-          telefono: 'No disponible',
-          detalles: emergency.descripcion || 'Sin descripción',
-          prioridad: emergency.prioridad,
-          coordenadas: emergency.ubicacion?.lat && emergency.ubicacion?.lon 
-            ? { lat: emergency.ubicacion.lat, lng: emergency.ubicacion.lon }
-            : null,
-          origen: emergency.origen,
-          adjuntos: emergency.adjuntos || []
-        }));
+        const mappedEmergencies = emergencies.map(emergency => {
+          console.log('Emergency ubicacion structure:', emergency.ubicacion);
+          
+          // Handle location based on the actual API structure
+          let ubicacion = 'Ubicación no disponible';
+          let coordenadas = null;
+          
+          if (emergency.ubicacion) {
+            if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
+              // If coordinates are available, show them with precision
+              const lat = emergency.ubicacion.lat.toFixed(6);
+              const lon = emergency.ubicacion.lon.toFixed(6);
+              ubicacion = `${lat}, ${lon}`;
+              coordenadas = { lat: emergency.ubicacion.lat, lng: emergency.ubicacion.lon };
+            } else {
+              ubicacion = 'Ubicación no disponible';
+            }
+          } else {
+            ubicacion = 'Ubicación no disponible';
+          }
+          
+          return {
+            id: emergency._id,
+            timestamp: new Date(emergency.timestamp || emergency.createdAt),
+            tipo: emergency.tipoEmergencia,
+            ubicacion,
+            coordenadas,
+            estado: emergency.estado,
+            servicios: getServicesFromType(emergency.tipoEmergencia),
+            ciudadano: `Usuario ${emergency.idUsuario?.slice(-4) || 'Desconocido'}`,
+            telefono: 'No disponible',
+            detalles: emergency.descripcion || 'Sin descripción',
+            prioridad: emergency.prioridad,
+            origen: emergency.origen,
+            adjuntos: emergency.adjuntos || []
+          };
+        });
         
         console.log('Mapped emergencies:', mappedEmergencies);
         setEmergencies(mappedEmergencies);
@@ -357,7 +377,30 @@ function OperadorDashboard() {
                       
                       <div className="flex items-center gap-1 text-sm text-gray-600">
                         <MapPin className="w-4 h-4 text-red-500" />
-                        <span className="font-medium">{latestEmergency.ubicacion}</span>
+                        {(() => {
+                          console.log('Latest emergency ubicacion:', latestEmergency.ubicacion);
+                          const isCoordinates = latestEmergency.ubicacion && 
+                            latestEmergency.ubicacion.includes(',') && 
+                            !latestEmergency.ubicacion.includes('Ubicación') && 
+                            !latestEmergency.ubicacion.includes('no disponible');
+                          console.log('Is coordinates:', isCoordinates);
+                          return isCoordinates;
+                        })() ? (
+                          <button
+                            onClick={() => {
+                              const [lat, lon] = latestEmergency.ubicacion.split(', ');
+                              const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                              console.log('Opening Google Maps:', googleMapsUrl);
+                              window.open(googleMapsUrl, '_blank');
+                            }}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors font-medium"
+                            title="Click para abrir en Google Maps"
+                          >
+                            {latestEmergency.ubicacion}
+                          </button>
+                        ) : (
+                          <span className="font-medium">{latestEmergency.ubicacion}</span>
+                        )}
                       </div>
                       
                       {latestEmergency.detalles && (
@@ -420,7 +463,27 @@ function OperadorDashboard() {
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-500">Ubicación</label>
-                              <p className="text-sm">{latestEmergency.ubicacion}</p>
+                              {(() => {
+                                const isCoordinates = latestEmergency.ubicacion && 
+                                  latestEmergency.ubicacion.includes(',') && 
+                                  !latestEmergency.ubicacion.includes('Ubicación') && 
+                                  !latestEmergency.ubicacion.includes('no disponible');
+                                return isCoordinates;
+                              })() ? (
+                                <button
+                                  onClick={() => {
+                                    const [lat, lon] = latestEmergency.ubicacion.split(', ');
+                                    const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                    window.open(googleMapsUrl, '_blank');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
+                                  title="Click para abrir en Google Maps"
+                                >
+                                  {latestEmergency.ubicacion}
+                                </button>
+                              ) : (
+                                <p className="text-sm">{latestEmergency.ubicacion}</p>
+                              )}
                             </div>
                             <div>
                               <label className="text-sm font-medium text-gray-500">Ciudadano</label>
@@ -584,7 +647,30 @@ function OperadorDashboard() {
                         
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                           <MapPin className="w-4 h-4" />
-                          <span>{emergency.ubicacion}</span>
+                          {(() => {
+                            console.log('Emergency ubicacion:', emergency.ubicacion);
+                            const isCoordinates = emergency.ubicacion && 
+                              emergency.ubicacion.includes(',') && 
+                              !emergency.ubicacion.includes('Ubicación') && 
+                              !emergency.ubicacion.includes('no disponible');
+                            console.log('Is coordinates:', isCoordinates);
+                            return isCoordinates;
+                          })() ? (
+                            <button
+                              onClick={() => {
+                                const [lat, lon] = emergency.ubicacion.split(', ');
+                                const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                console.log('Opening Google Maps:', googleMapsUrl);
+                                window.open(googleMapsUrl, '_blank');
+                              }}
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors"
+                              title="Click para abrir en Google Maps"
+                            >
+                              {emergency.ubicacion}
+                            </button>
+                          ) : (
+                            <span>{emergency.ubicacion}</span>
+                          )}
                         </div>
                         
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
@@ -651,7 +737,27 @@ function OperadorDashboard() {
                               </div>
                               <div>
                                 <label className="text-sm font-medium text-muted-foreground">Ubicación</label>
-                                <p className="text-sm">{emergency.ubicacion}</p>
+                                {(() => {
+                                  const isCoordinates = emergency.ubicacion && 
+                                    emergency.ubicacion.includes(',') && 
+                                    !emergency.ubicacion.includes('Ubicación') && 
+                                    !emergency.ubicacion.includes('no disponible');
+                                  return isCoordinates;
+                                })() ? (
+                                  <button
+                                    onClick={() => {
+                                      const [lat, lon] = emergency.ubicacion.split(', ');
+                                      const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                      window.open(googleMapsUrl, '_blank');
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
+                                    title="Click para abrir en Google Maps"
+                                  >
+                                    {emergency.ubicacion}
+                                  </button>
+                                ) : (
+                                  <p className="text-sm">{emergency.ubicacion}</p>
+                                )}
                               </div>
                               <div>
                                 <label className="text-sm font-medium text-muted-foreground">Ciudadano</label>

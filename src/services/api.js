@@ -64,6 +64,19 @@ class ApiService {
     const token = this.getStoredToken();
     if (!token) throw new Error('No authentication token found');
     
+    // Log complete payload before sending
+    console.log('=== PAYLOAD BEING SENT TO BACKEND ===');
+    console.log('URL:', `${this.baseURL}/api/emergencias`);
+    console.log('Method: POST');
+    console.log('Headers:', {
+      'Authorization': `Bearer ${token}`
+    });
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value);
+    }
+    console.log('=== END PAYLOAD ===');
+    
     const response = await fetch(`${this.baseURL}/api/emergencias`, {
       method: 'POST',
       headers: {
@@ -97,6 +110,15 @@ class ApiService {
   async updateEmergencyStatus(id, status) {
     const token = this.getStoredToken();
     if (!token) throw new Error('No authentication token found');
+    
+    console.log('=== UPDATE EMERGENCY STATUS ===');
+    console.log('Emergency ID:', id);
+    console.log('New Status:', status);
+    console.log('URL:', `${this.baseURL}/api/emergencias/${id}`);
+    console.log('Method: PUT');
+    console.log('Headers:', this.getHeaders(token));
+    console.log('Body:', JSON.stringify({ estado: status }));
+    console.log('=== END UPDATE ===');
     
     const response = await fetch(`${this.baseURL}/api/emergencias/${id}`, {
       method: 'PUT',
@@ -165,18 +187,36 @@ class ApiService {
   }
 
   // Helper method to create emergency data for form
-  createFormEmergencyData(userId, emergencyType, description, location, attachments = []) {
+  createFormEmergencyData(userId, emergencyType, description, location, selectedServices, attachments = []) {
     const formData = new FormData();
     formData.append('userId', userId);
     formData.append('tipoEmergencia', emergencyType);
-    formData.append('description', description);
-    formData.append('location.lat', location.lat.toString());
-    formData.append('location.lon', location.lng.toString());
+    
+    // Ensure description is not empty and has a fallback
+    const finalDescription = description || 'Emergencia reportada desde formulario';
+    formData.append('descripcion', finalDescription);
+    
+    formData.append('location[lat]', location.lat.toString());
+    formData.append('location[lon]', location.lng.toString());
     formData.append('origen', 'Formulario');
     
+    // Add selected services
+    if (selectedServices && selectedServices.length > 0) {
+      selectedServices.forEach((service, index) => {
+        formData.append(`servicios[${index}]`, service);
+      });
+    }
+    
+    // Add attachments
     attachments.forEach((file) => {
       formData.append('adjuntos', file);
     });
+    
+    // Debug: Log form data contents
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
     
     return formData;
   }
