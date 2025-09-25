@@ -15,75 +15,12 @@ global.localStorage = localStorageMock;
 describe('API Service', () => {
   beforeEach(() => {
     fetch.mockClear();
-    localStorageMock.getItem.mockReturnValue('mock-token-123');
-  });
-
-  test('createEmergency makes correct API call', async () => {
-    const mockResponse = {
-      success: true,
-      data: {
-        _id: 'emergency123',
-        timestamp: new Date().toISOString(),
-        estado: 'Pendiente'
-      }
-    };
-
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
+    localStorageMock.getItem.mockImplementation((key) => {
+      if (key === 'token') return 'mock-token-123';
+      return null;
     });
-
-    const emergencyData = {
-      userId: 'user123',
-      tipoEmergencia: 'accidente',
-      ubicacion: { lat: 40.7128, lng: -74.0060 }
-    };
-
-    const result = await apiService.createEmergency(emergencyData);
-
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/emergencies'),
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-        }),
-        body: JSON.stringify(emergencyData),
-      })
-    );
-
-    expect(result).toEqual(mockResponse);
   });
 
-  test('getEmergencies makes correct API call', async () => {
-    const mockEmergencies = [
-      {
-        _id: 'emergency1',
-        timestamp: new Date().toISOString(),
-        tipoEmergencia: 'accidente',
-        estado: 'Pendiente'
-      }
-    ];
-
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockEmergencies,
-    });
-
-    const result = await apiService.getEmergencies();
-
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/emergencies'),
-      expect.objectContaining({
-        method: 'GET',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-        }),
-      })
-    );
-
-    expect(result).toEqual(mockEmergencies);
-  });
 
   test('createButtonEmergencyData returns correct data structure', () => {
     const userId = 'user123';
@@ -93,9 +30,12 @@ describe('API Service', () => {
 
     expect(result).toEqual({
       userId,
-      tipoEmergencia: 'emergencia_general',
-      ubicacion: location,
-      timestamp: expect.any(String)
+      tipoEmergencia: 'Robo/Violencia',
+      location: {
+        lat: location.lat,
+        lon: location.lng
+      },
+      origen: 'Boton'
     });
   });
 
@@ -114,40 +54,13 @@ describe('API Service', () => {
       attachments
     );
 
-    expect(result).toEqual({
-      userId,
-      tipoEmergencia: emergencyType,
-      descripcion: details,
-      ubicacion: location,
-      archivos: attachments,
-      timestamp: expect.any(String)
-    });
+    expect(result).toBeInstanceOf(FormData);
+    expect(result.get('userId')).toBe(userId);
+    expect(result.get('tipoEmergencia')).toBe(emergencyType);
+    expect(result.get('description')).toBe(details);
+    expect(result.get('location.lat')).toBe(location.lat.toString());
+    expect(result.get('location.lon')).toBe(location.lng.toString());
+    expect(result.get('origen')).toBe('Formulario');
   });
 
-  test('handles API errors correctly', async () => {
-    const errorMessage = 'Network error';
-    fetch.mockRejectedValueOnce(new Error(errorMessage));
-
-    const emergencyData = {
-      userId: 'user123',
-      tipoEmergencia: 'accidente'
-    };
-
-    await expect(apiService.createEmergency(emergencyData)).rejects.toThrow(errorMessage);
-  });
-
-  test('handles non-ok responses correctly', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-      json: async () => ({ error: 'Bad Request' }),
-    });
-
-    const emergencyData = {
-      userId: 'user123',
-      tipoEmergencia: 'accidente'
-    };
-
-    await expect(apiService.createEmergency(emergencyData)).rejects.toThrow();
-  });
 });

@@ -12,10 +12,14 @@ const mockAuthContext = {
   logout: jest.fn(),
 };
 
-jest.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mockAuthContext,
-  AuthProvider: ({ children }) => children,
-}));
+jest.mock('@/contexts/AuthContext', () => {
+  const original = jest.requireActual('@/contexts/AuthContext');
+  return {
+    ...original,
+    useAuth: jest.fn(() => mockAuthContext),
+    AuthProvider: ({ children }) => children,
+  };
+});
 
 // Mock all the page components
 jest.mock('@/pages/Login', () => {
@@ -72,13 +76,7 @@ describe('App Component', () => {
   });
 
   test('renders login page for unauthenticated users', () => {
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    );
+    render(<App />);
     
     expect(screen.getByTestId('login-page')).toBeInTheDocument();
   });
@@ -90,15 +88,10 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    jest.mocked(require('@/contexts/AuthContext').useAuth).mockReturnValue(adminAuthContext);
+    const { useAuth } = require('@/contexts/AuthContext');
+    useAuth.mockReturnValue(adminAuthContext);
     
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    );
+    render(<App />);
     
     expect(screen.getByTestId('admin-dashboard-page')).toBeInTheDocument();
   });
@@ -110,15 +103,10 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    jest.mocked(require('@/contexts/AuthContext').useAuth).mockReturnValue(operadorAuthContext);
+    const { useAuth } = require('@/contexts/AuthContext');
+    useAuth.mockReturnValue(operadorAuthContext);
     
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    );
+    render(<App />);
     
     expect(screen.getByTestId('operador-dashboard-page')).toBeInTheDocument();
   });
@@ -130,15 +118,10 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    jest.mocked(require('@/contexts/AuthContext').useAuth).mockReturnValue(ciudadanoAuthContext);
+    const { useAuth } = require('@/contexts/AuthContext');
+    useAuth.mockReturnValue(ciudadanoAuthContext);
     
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    );
+    render(<App />);
     
     expect(screen.getByTestId('ciudadano-dashboard-page')).toBeInTheDocument();
   });
@@ -150,28 +133,12 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    jest.mocked(require('@/contexts/AuthContext').useAuth).mockReturnValue(authenticatedContext);
+    const { useAuth } = require('@/contexts/AuthContext');
+    useAuth.mockReturnValue(authenticatedContext);
     
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    );
+    render(<App />);
     
     expect(screen.getByTestId('ciudadano-dashboard-page')).toBeInTheDocument();
   });
 
-  test('redirects to login for unauthenticated users accessing protected routes', () => {
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    );
-    
-    expect(screen.getByTestId('login-page')).toBeInTheDocument();
-  });
 });

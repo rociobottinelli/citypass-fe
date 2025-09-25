@@ -2,6 +2,13 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 
+// Mock token endpoints used by AuthContext.login
+jest.mock('@/services/api', () => ({
+  getTokenAdmin: jest.fn().mockResolvedValue({ token: 'mock-token' }),
+  getTokenOperador: jest.fn().mockResolvedValue({ token: 'mock-token' }),
+  getTokenCiudadano: jest.fn().mockResolvedValue({ token: 'mock-token' }),
+}));
+
 // Test component to access context
 const TestComponent = () => {
   const { user, isAuthenticated, login, logout } = useAuth();
@@ -10,7 +17,10 @@ const TestComponent = () => {
     <div>
       <div data-testid="user">{user ? user.name : 'No user'}</div>
       <div data-testid="isAuthenticated">{isAuthenticated.toString()}</div>
-      <button data-testid="login-btn" onClick={() => login({ name: 'Test User', role: 'Ciudadano' })}>
+      <button data-testid="login-btn" onClick={async () => {
+        // AuthContext.login expects (email, password)
+        await login('ciudadano@citypass.com', '123456');
+      }}>
         Login
       </button>
       <button data-testid="logout-btn" onClick={logout}>
@@ -48,7 +58,7 @@ describe('AuthContext', () => {
     fireEvent.click(loginBtn);
     
     await waitFor(() => {
-      expect(screen.getByTestId('user')).toHaveTextContent('Test User');
+      expect(screen.getByTestId('user')).toHaveTextContent('Ciudadano');
       expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
     });
   });
@@ -95,7 +105,8 @@ describe('AuthContext', () => {
 
   test('loads user data from localStorage on mount', () => {
     const userData = { name: 'Stored User', role: 'Admin' };
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify({ ...userData, token: 't' }));
+    localStorage.setItem('token', 't');
     
     render(
       <AuthProvider>
