@@ -121,6 +121,7 @@ const EmergencyButton = () => {
   }
 
   // Countdown timer
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     let interval;
     if (isEmergency && countdown > 0) {

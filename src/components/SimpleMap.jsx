@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useRef as useReactRef } from 'react'
 
 // Variable global para controlar la carga de Google Maps
 let googleMapsLoaded = false
@@ -9,6 +9,9 @@ const SimpleMap = ({ emergencies }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [map, setMap] = useState(null)
+
+  const loadingRef = useReactRef(loading)
+  loadingRef.current = loading
 
   useEffect(() => {
     let isMounted = true
@@ -162,7 +165,7 @@ const SimpleMap = ({ emergencies }) => {
 
     // Timeout para evitar carga infinita
     const timeout = setTimeout(() => {
-      if (isMounted && loading) {
+      if (isMounted && loadingRef.current) {
         setError('Timeout: El mapa tardó demasiado en cargar')
         setLoading(false)
       }
