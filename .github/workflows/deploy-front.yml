@@ -12,7 +12,7 @@ env:
   AWS_REGION: us-east-2
   S3_BUCKET: citypass-emergencias-fe
   CF_DIST_ID: E3A0XUPEU868ZU
-  VITE_API_BASE: d4ovh14r0e4hs.cloudfront.net
+  VITE_API_BASE: https://d4ovh14r0e4hs.cloudfront.net
 
 jobs:
   lint:
