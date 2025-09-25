@@ -102,7 +102,7 @@ const renderEmergencyButton = () => {
   );
 };
 
-describe.skip('EmergencyButton Component', () => {
+describe('EmergencyButton Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

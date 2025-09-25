@@ -24,7 +24,9 @@ import {
   Search,
   Image,
   Download,
-  Zap
+  Zap,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 
 function OperadorDashboard() {
@@ -36,6 +38,8 @@ function OperadorDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(5)
 
   // Load emergencies from API
   useEffect(() => {
@@ -146,7 +150,26 @@ function OperadorDashboard() {
     }
 
     setFilteredEmergencies(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
   }, [emergencies, filter, searchTerm])
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredEmergencies.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentEmergencies = filteredEmergencies.slice(startIndex, endIndex)
+
+  const goToPage = (page) => {
+    setCurrentPage(page)
+  }
+
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1))
+  }
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages))
+  }
 
   const getEstadoColor = (estado) => {
     const colors = {
@@ -609,7 +632,14 @@ function OperadorDashboard() {
         {/* Emergencies List */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Emergencias ({filteredEmergencies.length})</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">
+              Emergencias ({filteredEmergencies.length})
+              {totalPages > 1 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  - Página {currentPage} de {totalPages}
+                </span>
+              )}
+            </CardTitle>
             <CardDescription>
               Lista de emergencias filtradas por estado
             </CardDescription>
@@ -621,7 +651,7 @@ function OperadorDashboard() {
                   No se encontraron emergencias con los filtros aplicados
                 </div>
               ) : (
-                filteredEmergencies.map((emergency) => (
+                currentEmergencies.map((emergency) => (
                   <div key={emergency.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <div className="flex-1">
@@ -880,6 +910,71 @@ function OperadorDashboard() {
                 ))
               )}
             </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando {startIndex + 1} a {Math.min(endIndex, filteredEmergencies.length)} de {filteredEmergencies.length} emergencias
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Anterior
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      // Show first page, last page, current page, and pages around current page
+                      const shouldShow = 
+                        page === 1 || 
+                        page === totalPages || 
+                        Math.abs(page - currentPage) <= 1;
+                      
+                      if (!shouldShow) {
+                        // Show ellipsis for gaps
+                        if (page === 2 && currentPage > 4) {
+                          return <span key={`ellipsis-${page}`} className="px-2">...</span>;
+                        }
+                        if (page === totalPages - 1 && currentPage < totalPages - 3) {
+                          return <span key={`ellipsis-${page}`} className="px-2">...</span>;
+                        }
+                        return null;
+                      }
+                      
+                      return (
+                        <Button
+                          key={page}
+                          variant={page === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => goToPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1"
+                  >
+                    Siguiente
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
         
