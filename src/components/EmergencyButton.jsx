@@ -22,11 +22,9 @@ const EmergencyButton = () => {
   const [emergencyDetails, setEmergencyDetails] = useState('');
   const [showServiceSelection, setShowServiceSelection] = useState(false);
   const [emergencyHistory, setEmergencyHistory] = useState([]);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Get user location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(

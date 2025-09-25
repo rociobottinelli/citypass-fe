@@ -22,7 +22,6 @@ import {
   Cross
 } from 'lucide-react';
 
-// Emergency Logo Component
 const EmergencyLogo = ({ size = "w-8 h-8", showText = true }) => {
   const iconSize = size === "w-8 h-8" ? "w-4 h-4" : "w-5 h-5";
   const boltSize = size === "w-8 h-8" ? "w-2 h-2" : "w-2.5 h-2.5";

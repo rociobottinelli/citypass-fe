@@ -3,7 +3,6 @@ import apiService from '../services/api';
 
 const AuthContext = createContext();
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -17,18 +16,15 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on app load
     const savedUser = localStorage.getItem('user');
     const savedToken = localStorage.getItem('token');
     
     if (savedUser && savedToken) {
       try {
         const userData = JSON.parse(savedUser);
-        // Verify token is still valid
         if (userData.token === savedToken) {
           setUser(userData);
         } else {
-          // Token mismatch, clear storage
           localStorage.removeItem('user');
           localStorage.removeItem('token');
         }
@@ -45,7 +41,6 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     
     try {
-      // Map email to user ID and role
       const userMapping = {
         'admin@citypass.com': { 
           id: '507f1f77bcf86cd799439011', 
@@ -70,7 +65,6 @@ export const AuthProvider = ({ children }) => {
       const userInfo = userMapping[email];
       
       if (userInfo && password === '123456') {
-        // Get token from API based on role
         let tokenResponse;
         if (userInfo.role === 'Admin') {
           tokenResponse = await apiService.getTokenAdmin(userInfo.id);

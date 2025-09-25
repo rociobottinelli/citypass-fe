@@ -10,7 +10,6 @@ import AdminStatistics from '@/pages/AdminStatistics'
 import OperadorDashboard from '@/pages/OperadorDashboard'
 import CiudadanoDashboard from '@/pages/CiudadanoDashboard'
 
-// Protected Route Component
 function ProtectedRoute({ children, requiredRole }) {
   const { user, isAuthenticated } = useAuth();
   
@@ -25,12 +24,10 @@ function ProtectedRoute({ children, requiredRole }) {
   return children;
 }
 
-// Public Route Component (only accessible when not authenticated)
 function PublicRoute({ children }) {
   const { isAuthenticated, user } = useAuth();
   
   if (isAuthenticated) {
-    // Redirect to appropriate dashboard based on role
     if (user.role === 'Admin') {
       return <Navigate to="/admin/dashboard" replace />;
     } else if (user.role === 'Operador') {
@@ -48,10 +45,8 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes - Only accessible when not authenticated */}
           <Route path="/login" element={<PublicRoute><Layout><Login /></Layout></PublicRoute>} />
           
-          {/* Protected Routes - Require authentication */}
           <Route 
             path="/dashboard" 
             element={
@@ -69,7 +64,6 @@ function App() {
             } 
           />
           
-          {/* Admin Routes */}
           <Route 
             path="/admin/dashboard" 
             element={
@@ -87,7 +81,6 @@ function App() {
             } 
           />
           
-          {/* Operador Routes */}
           <Route 
             path="/operador/dashboard" 
             element={
@@ -97,7 +90,6 @@ function App() {
             } 
           />
           
-          {/* Ciudadano Routes */}
           <Route 
             path="/ciudadano/dashboard" 
             element={
@@ -115,7 +107,6 @@ function App() {
             } 
           />
           
-          {/* Default route - redirect to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

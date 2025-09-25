@@ -5,7 +5,6 @@ import { BrowserRouter } from 'react-router-dom';
 import EmergencyButton from '../EmergencyButton';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-// Inline geolocation mock (helper file was removed)
 const mockLocation = { lat: 40.7128, lng: -74.0060 };
 beforeAll(() => {
   Object.defineProperty(navigator, 'geolocation', {
@@ -27,7 +26,6 @@ const mockUser = {
   token: 'mock-token-123',
 };
 
-// Mock the API service
 jest.mock('@/services/api', () => ({
   createEmergency: jest.fn().mockResolvedValue({ success: true }),
   createButtonEmergencyData: jest.fn().mockReturnValue({}),

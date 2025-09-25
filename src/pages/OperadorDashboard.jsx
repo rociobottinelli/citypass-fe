@@ -6,7 +6,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useAuth } from '@/contexts/AuthContext'
 import apiService from '@/services/api'
-// import SimpleMap from '@/components/SimpleMap'
 import { 
   AlertTriangle, 
   Clock, 
@@ -41,24 +40,18 @@ function OperadorDashboard() {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(5)
 
-  // Load emergencies from API
   useEffect(() => {
     const loadEmergencies = async () => {
       try {
         const emergencies = await apiService.getEmergencies();
-        console.log('Emergencies from API:', emergencies);
         
-        // Map API data to frontend format (backend already filters by role)
         const mappedEmergencies = emergencies.map(emergency => {
-          console.log('Emergency ubicacion structure:', emergency.ubicacion);
           
-          // Handle location based on the actual API structure
           let ubicacion = 'Ubicación no disponible';
           let coordenadas = null;
           
           if (emergency.ubicacion) {
             if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
-              // If coordinates are available, show them with precision
               const lat = emergency.ubicacion.lat.toFixed(6);
               const lon = emergency.ubicacion.lon.toFixed(6);
               ubicacion = `${lat}, ${lon}`;
@@ -118,7 +111,6 @@ function OperadorDashboard() {
     loadEmergencies();
   }, [])
 
-  // Helper function to map emergency type to services
   const getServicesFromType = (tipoEmergencia) => {
     const serviceMapping = {
       'Accidente': ['Ambulancia', 'Policía'],
@@ -131,16 +123,13 @@ function OperadorDashboard() {
     return serviceMapping[tipoEmergencia] || ['Ambulancia', 'Policía'];
   }
 
-  // Filter and search logic
   useEffect(() => {
     let filtered = emergencies
 
-    // Filter by status
     if (filter !== 'all') {
       filtered = filtered.filter(emergency => emergency.estado === filter)
     }
 
-    // Search by type, location, or citizen name
     if (searchTerm) {
       filtered = filtered.filter(emergency => 
         emergency.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -150,10 +139,9 @@ function OperadorDashboard() {
     }
 
     setFilteredEmergencies(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
+    setCurrentPage(1)
   }, [emergencies, filter, searchTerm])
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredEmergencies.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
@@ -629,7 +617,6 @@ function OperadorDashboard() {
           </CardContent>
         </Card> */}
 
-        {/* Emergencies List */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg sm:text-xl">
@@ -911,7 +898,6 @@ function OperadorDashboard() {
               )}
             </div>
             
-            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-6 pt-4 border-t">
                 <div className="text-sm text-muted-foreground">
@@ -931,14 +917,12 @@ function OperadorDashboard() {
                   
                   <div className="flex items-center gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                      // Show first page, last page, current page, and pages around current page
                       const shouldShow = 
                         page === 1 || 
                         page === totalPages || 
                         Math.abs(page - currentPage) <= 1;
                       
                       if (!shouldShow) {
-                        // Show ellipsis for gaps
                         if (page === 2 && currentPage > 4) {
                           return <span key={`ellipsis-${page}`} className="px-2">...</span>;
                         }
@@ -978,7 +962,6 @@ function OperadorDashboard() {
           </CardContent>
         </Card>
         
-        {/* Modal para visualizar imágenes */}
         {selectedImage && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="relative max-w-4xl max-h-[90vh] w-full">

@@ -21,7 +21,6 @@ function Login() {
     const result = await login(email, password)
     
     if (result.success) {
-      // Redirect based on user role
       const { user } = result;
       if (user.role === 'Admin') {
         navigate('/admin/dashboard')

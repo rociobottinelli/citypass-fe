@@ -1,5 +1,4 @@
 /* eslint-env node */
-// Prefer Vite env at runtime; fall back to process.env (tests/CI); default to localhost
 const API_BASE_URL = (
   typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE
 ) || 'https://d4ovh14r0e4hs.cloudfront.net';
@@ -9,7 +8,6 @@ class ApiService {
     this.baseURL = API_BASE_URL;
   }
 
-  // Helper method to get headers with auth token
   getHeaders(token) {
     return {
       'Content-Type': 'application/json',
@@ -17,7 +15,6 @@ class ApiService {
     };
   }
 
-  // Helper method to handle API responses
   async handleResponse(response) {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Error de conexión' }));
@@ -26,7 +23,6 @@ class ApiService {
     return response.json();
   }
 
-  // Auth endpoints
   async getTokenAdmin(userId) {
     const response = await fetch(`${this.baseURL}/api/auth/token/admin?userId=${userId}`);
     return this.handleResponse(response);
@@ -42,12 +38,10 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  // Helper method to get token from localStorage
   getStoredToken() {
     return localStorage.getItem('token');
   }
 
-  // Emergency endpoints
   async createEmergency(emergencyData) {
     const token = this.getStoredToken();
     if (!token) throw new Error('No authentication token found');

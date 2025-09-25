@@ -47,29 +47,22 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(null)
   
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
   const [totalPages, setTotalPages] = useState(1)
 
-  // Load emergencies from API
   useEffect(() => {
     const loadEmergencies = async () => {
       try {
         const emergencies = await apiService.getEmergencies();
-        console.log('Emergencies from API:', emergencies);
         
-        // Map API data to frontend format (backend already filters by role)
         const mappedEmergencies = emergencies.map(emergency => {
-          console.log('Emergency ubicacion structure:', emergency.ubicacion);
           
-          // Handle location based on the actual API structure
           let ubicacion = 'Ubicación no disponible';
           let coordenadas = null;
           
           if (emergency.ubicacion) {
             if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
-              // If coordinates are available, show them with precision
               const lat = emergency.ubicacion.lat.toFixed(6);
               const lon = emergency.ubicacion.lon.toFixed(6);
               ubicacion = `${lat}, ${lon}`;
