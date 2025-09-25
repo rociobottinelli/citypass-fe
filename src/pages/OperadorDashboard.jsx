@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useAuth } from '@/contexts/AuthContext'
 import apiService from '@/services/api'
+// import SimpleMap from '@/components/SimpleMap'
 import { 
   AlertTriangle, 
   Clock, 
@@ -22,7 +23,8 @@ import {
   Filter,
   Search,
   Image,
-  Download
+  Download,
+  Zap
 } from 'lucide-react'
 
 function OperadorDashboard() {
@@ -232,7 +234,7 @@ function OperadorDashboard() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="border-yellow-200 bg-yellow-50">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-yellow-700 text-base sm:text-lg">
@@ -281,18 +283,197 @@ function OperadorDashboard() {
           <Card className="border-red-200 bg-red-50">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-red-700 text-base sm:text-lg">
-                <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                 Críticas
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-2xl sm:text-3xl font-bold text-red-800">
-                {emergencies.filter(e => e.prioridad === 'Crítica').length}
+                {emergencies.filter(e => e.prioridad === 'High' && e.estado !== 'Cancelada' && e.estado !== 'Resuelta').length}
               </div>
               <p className="text-xs sm:text-sm text-red-600">Alta prioridad</p>
             </CardContent>
           </Card>
+
+          <Card className="border-gray-200 bg-gray-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-gray-700 text-base sm:text-lg">
+                <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                Canceladas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-800">
+                {emergencies.filter(e => e.estado === 'Cancelada').length}
+              </div>
+              <p className="text-xs sm:text-sm text-gray-600">Emergencias canceladas</p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Latest Emergency Alert */}
+        {emergencies.length > 0 && (
+          <Card className="mb-6 sm:mb-8 border-l-4 border-l-red-500 bg-gradient-to-r from-red-50 to-orange-50 shadow-lg">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-red-700 text-lg sm:text-xl">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
+                Última Emergencia Ingresada
+                <Badge className="bg-red-500 text-white text-xs animate-bounce">
+                  NUEVA
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const latestEmergency = emergencies
+                  .filter(e => e.coordenadas && e.coordenadas.lat && e.coordenadas.lng)
+                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
+                
+                if (!latestEmergency) return null
+                
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* Emergency Info */}
+                    <div className="lg:col-span-2 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="text-2xl">{getServiceIcon(latestEmergency.servicios[0])}</div>
+                          <div>
+                            <h3 className="font-bold text-lg text-gray-900">{latestEmergency.tipo}</h3>
+                            <p className="text-sm text-gray-600">
+                              {getTimeAgo(latestEmergency.timestamp)} • {latestEmergency.ciudadano}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge className={`${getPrioridadColor(latestEmergency.prioridad)} text-xs font-semibold`}>
+                            {latestEmergency.prioridad}
+                          </Badge>
+                          <Badge className={`${getEstadoColor(latestEmergency.estado)} text-xs`}>
+                            {latestEmergency.estado}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 text-red-500" />
+                        <span className="font-medium">{latestEmergency.ubicacion}</span>
+                      </div>
+                      
+                      {latestEmergency.detalles && (
+                        <div className="bg-white/70 p-3 rounded-lg border border-red-200">
+                          <p className="text-sm text-gray-700">
+                            <strong>Detalles:</strong> {latestEmergency.detalles}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-1">
+                        {latestEmergency.servicios.map((service, index) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-white/70 border-red-200">
+                            {service}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold"
+                            size="sm"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ver Detalles Completos
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="w-5 h-5 text-red-500" />
+                              Emergencia #{latestEmergency.id}
+                            </DialogTitle>
+                            <DialogDescription>
+                              Información completa de la última emergencia ingresada
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Tipo</label>
+                                <p className="text-sm font-semibold">{latestEmergency.tipo}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Estado</label>
+                                <p className="text-sm">{latestEmergency.estado}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Prioridad</label>
+                                <p className="text-sm">{latestEmergency.prioridad}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Fecha</label>
+                                <p className="text-sm">{latestEmergency.timestamp.toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Ubicación</label>
+                              <p className="text-sm">{latestEmergency.ubicacion}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Ciudadano</label>
+                              <p className="text-sm">{latestEmergency.ciudadano} - {latestEmergency.telefono}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Servicios</label>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {latestEmergency.servicios.map((service, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {service}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                            {latestEmergency.detalles && (
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Detalles</label>
+                                <p className="text-sm bg-gray-50 p-2 rounded">{latestEmergency.detalles}</p>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      {latestEmergency.estado === 'Pendiente' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => updateEmergencyStatus(latestEmergency.id, 'En Tratamiento')}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Tomar Emergencia
+                        </Button>
+                      )}
+                      
+                      {latestEmergency.estado === 'En Tratamiento' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => updateEmergencyStatus(latestEmergency.id, 'Resuelta')}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar Resuelta
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters and Search */}
         <Card className="mb-6 sm:mb-8">
@@ -346,6 +527,21 @@ function OperadorDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Emergency Map - Hidden for now */}
+        {/* <Card className="mb-6 sm:mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg sm:text-xl">Mapa de Emergencias</CardTitle>
+            <CardDescription>
+              Ubicaciones de emergencias con coordenadas disponibles
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SimpleMap 
+              emergencies={filteredEmergencies.filter(e => e.coordenadas && e.coordenadas.lat && e.coordenadas.lng)}
+            />
+          </CardContent>
+        </Card> */}
 
         {/* Emergencies List */}
         <Card>

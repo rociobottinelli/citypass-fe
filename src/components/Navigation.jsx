@@ -82,7 +82,7 @@ const Navigation = () => {
         },
         {
           name: 'Estadísticas',
-          path: '/admin/dashboard',
+          path: '/admin/statistics',
           icon: <BarChart3 className="w-4 h-4" />,
           description: 'Análisis del sistema'
         }
@@ -92,13 +92,7 @@ const Navigation = () => {
     if (user?.role === 'Operador') {
       return [
         {
-          name: 'Emergencias',
-          path: '/operador/dashboard',
-          icon: <AlertTriangle className="w-4 h-4" />,
-          description: 'Gestión de emergencias'
-        },
-        {
-          name: 'Panel',
+          name: 'Panel del Operador',
           path: '/operador/dashboard',
           icon: <Settings className="w-4 h-4" />,
           description: 'Panel de operador'
@@ -183,14 +177,16 @@ const Navigation = () => {
               </div>
             )}
             
-            {/* Emergency Quick Actions on Mobile */}
-            <Button
-              size="sm"
-              className="bg-red-500 hover:bg-red-600 text-white"
-              onClick={() => window.open('tel:911')}
-            >
-              <Phone className="w-4 h-4" />
-            </Button>
+            {/* Emergency Quick Actions on Mobile - Only for Citizens */}
+            {user?.role === 'Ciudadano' && (
+              <Button
+                size="sm"
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={() => window.open('tel:911')}
+              >
+                <Phone className="w-4 h-4" />
+              </Button>
+            )}
             
             <Button
               size="sm"
@@ -240,23 +236,25 @@ const Navigation = () => {
                 </Button>
               )}
               
-              {/* Emergency Quick Actions */}
-              <div className="pt-4 border-t">
-                <div className="text-sm font-medium text-gray-500 mb-2">Acciones Rápidas</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {emergencyQuickActions.map((action, index) => (
-                    <Button
-                      key={index}
-                      size="sm"
-                      className={`${action.color} text-white`}
-                      onClick={action.action}
-                    >
-                      {action.icon}
-                      <span className="ml-1">{action.name}</span>
-                    </Button>
-                  ))}
+              {/* Emergency Quick Actions - Only for Citizens */}
+              {user?.role === 'Ciudadano' && (
+                <div className="pt-4 border-t">
+                  <div className="text-sm font-medium text-gray-500 mb-2">Acciones Rápidas</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {emergencyQuickActions.map((action, index) => (
+                      <Button
+                        key={index}
+                        size="sm"
+                        className={`${action.color} text-white`}
+                        onClick={action.action}
+                      >
+                        {action.icon}
+                        <span className="ml-1">{action.name}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -316,23 +314,25 @@ const Navigation = () => {
             )}
           </nav>
 
-          {/* Emergency Quick Actions */}
-          <div className="mt-8 pt-6 border-t">
-            <div className="text-sm font-medium text-gray-500 mb-4">Acciones de Emergencia</div>
-            <div className="space-y-2">
-              {emergencyQuickActions.map((action, index) => (
-                <Button
-                  key={index}
-                  size="sm"
-                  className={`w-full ${action.color} text-white`}
-                  onClick={action.action}
-                >
-                  {action.icon}
-                  <span className="ml-2">{action.name}</span>
-                </Button>
-              ))}
+          {/* Emergency Quick Actions - Only for Citizens */}
+          {user?.role === 'Ciudadano' && (
+            <div className="mt-8 pt-6 border-t">
+              <div className="text-sm font-medium text-gray-500 mb-4">Acciones de Emergencia</div>
+              <div className="space-y-2">
+                {emergencyQuickActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    size="sm"
+                    className={`w-full ${action.color} text-white`}
+                    onClick={action.action}
+                  >
+                    {action.icon}
+                    <span className="ml-2">{action.name}</span>
+                  </Button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Emergency Status Indicator */}
           <div className="mt-8 p-3 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-200 shadow-sm">

@@ -1,0 +1,35 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  S3_BUCKET: citypass-emergencias-fe
+  CF_DIST_ID: E3A0XUPEU868ZU
+  VITE_API_BASE: http://98.87.68.144:5000
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_API_BASE: ${{ env.VITE_API_BASE }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::<<ACCOUNT_ID>>:role/ci-cd-frontend-role
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws s3 sync dist/ s3://$S3_BUCKET --delete
+      - run: aws cloudfront create-invalidation --distribution-id $CF_DIST_ID --paths "/index.html" "/"
