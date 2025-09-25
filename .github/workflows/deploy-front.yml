@@ -29,7 +29,7 @@ jobs:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::<<ACCOUNT_ID>>:role/ci-cd-frontend-role
+          role-to-assume: arn:aws:iam::756074066107:role/ci-cd-frontend-role
           aws-region: ${{ env.AWS_REGION }}
       - run: aws s3 sync dist/ s3://$S3_BUCKET --delete
       - run: aws cloudfront create-invalidation --distribution-id $CF_DIST_ID --paths "/index.html" "/"
