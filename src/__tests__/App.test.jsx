@@ -89,7 +89,7 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    const { useAuth } = require('@/contexts/AuthContext');
+    const { useAuth } = jest.requireMock('@/contexts/AuthContext');
     useAuth.mockReturnValue(adminAuthContext);
     
     render(<App />);
@@ -104,7 +104,7 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    const { useAuth } = require('@/contexts/AuthContext');
+    const { useAuth } = jest.requireMock('@/contexts/AuthContext');
     useAuth.mockReturnValue(operadorAuthContext);
     
     render(<App />);
@@ -119,7 +119,7 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    const { useAuth } = require('@/contexts/AuthContext');
+    const { useAuth } = jest.requireMock('@/contexts/AuthContext');
     useAuth.mockReturnValue(ciudadanoAuthContext);
     
     render(<App />);
@@ -134,7 +134,7 @@ describe('App Component', () => {
       isAuthenticated: true,
     };
     
-    const { useAuth } = require('@/contexts/AuthContext');
+    const { useAuth } = jest.requireMock('@/contexts/AuthContext');
     useAuth.mockReturnValue(authenticatedContext);
     
     render(<App />);

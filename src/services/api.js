@@ -170,7 +170,7 @@ class ApiService {
     formData.append('location.lon', location.lng.toString());
     formData.append('origen', 'Formulario');
     
-    attachments.forEach((file, index) => {
+    attachments.forEach((file) => {
       formData.append('adjuntos', file);
     });
     

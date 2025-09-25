@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +22,7 @@ const EmergencyButton = () => {
   const [emergencyDetails, setEmergencyDetails] = useState('');
   const [showServiceSelection, setShowServiceSelection] = useState(false);
   const [emergencyHistory, setEmergencyHistory] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -189,13 +189,13 @@ const EmergencyButton = () => {
     setCountdown(5); // 5 second countdown
   };
 
-  const dispatchEmergency = async () => {
+  const dispatchEmergency = useCallback(async () => {
     if (!user || !user.token) {
       alert('Error: Usuario no autenticado');
       return;
     }
 
-    setIsSubmitting(true);
+    // setIsSubmitting(true);
     
     try {
       let emergencyData;
@@ -255,21 +255,11 @@ const EmergencyButton = () => {
       console.error('Error creating emergency:', error);
       alert(`Error al enviar emergencia: ${error.message}`);
     } finally {
-      setIsSubmitting(false);
+      // setIsSubmitting(false);
     }
-  };
+  }, [user, location, selectedType, emergencyDetails, selectedServices, attachments, navigate]);
 
-  const getServiceIcon = (serviceId) => {
-    const icons = {
-      ambulancia: <Heart className="w-5 h-5" />,
-      policia: <Shield className="w-5 h-5" />,
-      bomberos: <Flame className="w-5 h-5" />,
-      rescatistas: <Car className="w-5 h-5" />,
-      defensa_civil: <Home className="w-5 h-5" />,
-      psicologo: <User className="w-5 h-5" />
-    };
-    return icons[serviceId] || <AlertTriangle className="w-5 h-5" />;
-  };
+  // Note: getServiceIcon is not used in this component UI currently
 
   const getTypeIcon = (typeId) => {
     const icons = {

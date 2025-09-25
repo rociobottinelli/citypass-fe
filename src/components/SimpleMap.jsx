@@ -8,7 +8,7 @@ const SimpleMap = ({ emergencies }) => {
   const mapRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [map, setMap] = useState(null)
+  // const [map, setMap] = useState(null)
 
   const loadingRef = useReactRef(loading)
   loadingRef.current = loading
@@ -101,7 +101,7 @@ const SimpleMap = ({ emergencies }) => {
         console.log('Map created successfully')
         
         if (isMounted) {
-          setMap(mapInstance)
+          // setMap(mapInstance)
           setLoading(false)
           
           // Agregar marcadores después de un delay

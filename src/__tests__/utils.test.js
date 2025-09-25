@@ -8,7 +8,8 @@ describe('Utility Functions', () => {
     });
 
     test('handles conditional classes', () => {
-      const result = cn('base', true && 'conditional', false && 'hidden');
+      const shouldShow = false;
+      const result = cn('base', 'conditional', shouldShow ? 'hidden' : '');
       expect(result).toBe('base conditional');
     });
 
