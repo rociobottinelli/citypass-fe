@@ -2,7 +2,7 @@
 // Prefer Vite env at runtime; fall back to process.env (tests/CI); default to localhost
 const API_BASE_URL = (
   typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE
-) || '/';
+) || 'd4ovh14r0e4hs.cloudfront.net';
 
 class ApiService {
   constructor() {
