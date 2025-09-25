@@ -188,7 +188,7 @@ class ApiService {
     
     // Ensure description is not empty and has a fallback
     const finalDescription = description || 'Emergencia reportada desde formulario';
-    formData.append('descripcion', finalDescription);
+    formData.append('description', finalDescription);
     
     formData.append('location[lat]', location.lat.toString());
     formData.append('location[lon]', location.lng.toString());

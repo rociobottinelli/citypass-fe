@@ -53,19 +53,7 @@ const EmergencyButton = () => {
           // Handle location based on the actual API structure
           let ubicacion = 'Ubicación no disponible';
           if (emergency.ubicacion) {
-            if (typeof emergency.ubicacion === 'string') {
-              ubicacion = emergency.ubicacion;
-            } else if (emergency.ubicacion.direccion) {
-              ubicacion = emergency.ubicacion.direccion;
-            } else if (emergency.ubicacion.address) {
-              ubicacion = emergency.ubicacion.address;
-            } else if (emergency.ubicacion.nombre) {
-              ubicacion = emergency.ubicacion.nombre;
-            } else if (emergency.ubicacion.descripcion) {
-              ubicacion = emergency.ubicacion.descripcion;
-            } else if (emergency.ubicacion.texto) {
-              ubicacion = emergency.ubicacion.texto;
-            } else if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
+            if (emergency.ubicacion.lat && emergency.ubicacion.lon) {
               const lat = emergency.ubicacion.lat.toFixed(6);
               const lon = emergency.ubicacion.lon.toFixed(6);
               ubicacion = `${lat}, ${lon}`;
