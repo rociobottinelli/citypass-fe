@@ -24,8 +24,16 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Lint
+        run: npm run lint -- --max-warnings=0
       - name: Run unit tests
         run: npm run test:ci
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
       - run: npm run build
         env:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
