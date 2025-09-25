@@ -8,7 +8,7 @@ const FloatingEmergencyButton = () => {
 
   const handleEmergencyClick = () => {
     console.log('Emergency button clicked!'); // Debug log
-    navigate('/emergency');
+    navigate('/ciudadano/emergency');
   };
 
   return (

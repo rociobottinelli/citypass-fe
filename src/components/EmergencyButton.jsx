@@ -120,6 +120,71 @@ const EmergencyButton = () => {
     return serviceMapping[tipoEmergencia] || ['Ambulancia', 'Policía'];
   }
 
+  // Dispatch emergency function
+  const dispatchEmergency = useCallback(async () => {
+    if (!user || !user.token) {
+      alert('Error: Usuario no autenticado');
+      return;
+    }
+
+    // setIsSubmitting(true);
+    
+    try {
+      let emergencyData;
+      
+      if (selectedType === 'emergencia_general') {
+        // Direct button emergency
+        emergencyData = apiService.createButtonEmergencyData(user.id, location);
+        const response = await apiService.createEmergency(emergencyData);
+        console.log('Emergency created:', response);
+      } else {
+        // Detailed form emergency
+        emergencyData = apiService.createFormEmergencyData(
+          user.id,
+          selectedType,
+          emergencyDetails,
+          location,
+          selectedServices,
+          attachments
+        );
+        const response = await apiService.createEmergency(emergencyData);
+        console.log('Detailed emergency created:', response);
+      }
+
+      setEmergencyHistory(prev => [
+        {
+          id: prev.length + 1,
+          type: selectedType,
+          services: selectedServices,
+          timestamp: new Date().toISOString(),
+          location: location ? `${location.lat}, ${location.lng}` : 'Ubicación desconocida',
+          status: 'Reportada',
+        },
+        ...prev,
+      ]);
+
+      setShowSuccessMessage(true);
+      setIsEmergency(false);
+      setCountdown(0);
+      setSelectedType('emergencia_general');
+      setSelectedServices([]);
+      setEmergencyDetails('');
+      setAttachments([]);
+
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        // Redirect to user dashboard
+        navigate('/ciudadano/dashboard');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error creating emergency:', error);
+      alert(`Error al enviar emergencia: ${error.message}`);
+    } finally {
+      // setIsSubmitting(false);
+    }
+  }, [user, location, selectedType, emergencyDetails, selectedServices, attachments, navigate]);
+
   // Countdown timer
   useEffect(() => {
     let interval;
@@ -189,75 +254,6 @@ const EmergencyButton = () => {
     setCountdown(5); // 5 second countdown
   };
 
-  const dispatchEmergency = useCallback(async () => {
-    if (!user || !user.token) {
-      alert('Error: Usuario no autenticado');
-      return;
-    }
-
-    // setIsSubmitting(true);
-    
-    try {
-      let emergencyData;
-      
-      if (selectedType === 'emergencia_general') {
-        // Direct button emergency
-        emergencyData = apiService.createButtonEmergencyData(user.id, location);
-        const response = await apiService.createEmergency(emergencyData);
-        console.log('Emergency created:', response);
-      } else {
-        // Detailed form emergency
-        const formData = apiService.createFormEmergencyData(
-          user.id,
-          selectedType,
-          emergencyDetails,
-          location,
-          attachments
-        );
-        const response = await apiService.createEmergencyWithForm(formData);
-        console.log('Emergency created:', response);
-      }
-      
-    const emergency = {
-      id: Date.now(),
-      timestamp: new Date(),
-      servicios: selectedServices,
-      tipo: selectedType,
-      ubicacion: location ? `${location.lat}, ${location.lng}` : 'Ubicación no disponible',
-      estado: 'Pendiente',
-      detalles: emergencyDetails || 'Emergencia reportada desde botón antipánico',
-      prioridad: 'Media',
-      origen: 'Boton'
-    };
-    
-    setEmergencyHistory(prev => [emergency, ...prev]);
-    
-    // Show success message
-    console.log('Emergency created successfully, showing success message');
-    setShowSuccessMessage(true);
-    
-    // Reset after dispatch and redirect
-    setTimeout(() => {
-      console.log('Redirecting to dashboard');
-      setIsEmergency(false);
-      setCountdown(0);
-      setSelectedServices([]);
-      setSelectedType(null);
-      setEmergencyDetails('');
-      setAttachments([]);
-      setShowSuccessMessage(false);
-      
-      // Redirect to user dashboard
-      navigate('/ciudadano/dashboard');
-    }, 3000);
-    
-    } catch (error) {
-      console.error('Error creating emergency:', error);
-      alert(`Error al enviar emergencia: ${error.message}`);
-    } finally {
-      // setIsSubmitting(false);
-    }
-  }, [user, location, selectedType, emergencyDetails, selectedServices, attachments, navigate]);
 
   // Note: getServiceIcon is not used in this component UI currently
 
