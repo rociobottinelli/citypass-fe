@@ -1,9 +1,7 @@
-name: CI/CD Frontend
+name: Deploy Frontend
 
 on:
   push:
-    branches: [main]
-  pull_request:
     branches: [main]
 
 permissions:
@@ -17,93 +15,23 @@ env:
   VITE_API_BASE: http://98.87.68.144:5000
 
 jobs:
-  build-and-test:
-    name: Build & Checks
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      - name: Install deps
-        run: npm ci
-
-      # Checks (no fallan si no existen los scripts)
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: Typecheck
-        run: npm run typecheck --if-present
-        # si usás TS y no tenés script, podés usar:
-        # run: npx tsc --noEmit
-
-      - name: Tests
-        run: npm test -- --ci --passWithNoTests
-
-      - name: Build (Vite)
-        run: npm run build
+      - run: npm ci
+      - name: Run unit tests
+        run: npm run test:ci
+      - run: npm run build
         env:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
-
-      # Artefacto del build para rollback/evidencia
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ github.sha }}
-          path: dist
-          retention-days: 14
-
-  deploy:
-    name: Deploy to S3 + Invalidate CloudFront
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main'   # sólo deploy en main
-    runs-on: ubuntu-latest
-    concurrency:
-      group: deploy-frontend
-      cancel-in-progress: true
-
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-${{ github.sha }}
-          path: dist
-
-      - name: Configure AWS via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::756074066107:role/ci-cd-frontend-role
           aws-region: ${{ env.AWS_REGION }}
-
-      # Subimos assets fingerprinted con MIME y caché largo (immutable)
-      - name: Upload static assets (cache long)
-        run: |
-          shopt -s globstar nullglob
-          for f in dist/**/*; do
-            if [ -f "$f" ] && [ "$(basename "$f")" != "index.html" ]; then
-              mime=$(file --mime-type -b "$f")
-              aws s3 cp "$f" "s3://${S3_BUCKET}/${f#dist/}" \
-                --content-type "$mime" \
-                --cache-control "public, max-age=31536000, immutable"
-            fi
-          done
-
-      # index.html sin caché para apuntar al bundle nuevo
-      - name: Upload index.html (no cache)
-        run: |
-          aws s3 cp dist/index.html "s3://${S3_BUCKET}/index.html" \
-            --content-type "text/html; charset=utf-8" \
-            --cache-control "no-cache"
-
-      # Invalidación mínima (sólo raíz e index.html)
-      - name: Invalidate CloudFront
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id "$CF_DIST_ID" \
-            --paths "/index.html" "/"
+      - run: aws s3 sync dist/ s3://$S3_BUCKET --delete
+      - run: aws cloudfront create-invalidation --distribution-id $CF_DIST_ID --paths "/index.html" "/"
