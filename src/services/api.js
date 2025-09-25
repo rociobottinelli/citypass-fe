@@ -1,10 +1,15 @@
 /* eslint-env node */
-// Prefer Vite env at runtime; fall back to process.env (tests/CI); default to localhost
-const API_BASE_URL = (
-  typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE
-) || (
-  typeof process !== 'undefined' && process.env && process.env.VITE_API_BASE
-) || 'http://98.87.68.144:5000';
+// Resolve API base safely in both Vite (browser) and Jest/Node without using import.meta syntax directly
+let viteEnvBase;
+try {
+  // Evaluate import.meta at runtime to avoid parse errors under Jest
+  // eslint-disable-next-line no-new-func
+  viteEnvBase = new Function('try { return (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE) } catch (e) { return undefined }')();
+} catch (_) {
+  viteEnvBase = undefined;
+}
+
+const API_BASE_URL = viteEnvBase || 'http://98.87.68.144:5000';
 
 class ApiService {
   constructor() {

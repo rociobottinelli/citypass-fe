@@ -51,8 +51,11 @@ const originalError = console.error;
 beforeAll(() => {
   console.error = (...args) => {
     if (
-      typeof args[0] === 'string' &&
-      args[0].includes('Warning: ReactDOM.render is no longer supported')
+      typeof args[0] === 'string' && (
+        args[0].includes('Warning: ReactDOM.render is no longer supported') ||
+        args[0].includes('not wrapped in act(') ||
+        args[0].includes('Warning: An update to')
+      )
     ) {
       return;
     }

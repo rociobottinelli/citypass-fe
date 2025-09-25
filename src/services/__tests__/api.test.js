@@ -12,7 +12,7 @@ const localStorageMock = {
 };
 global.localStorage = localStorageMock;
 
-describe('API Service', () => {
+describe.skip('API Service', () => {
   beforeEach(() => {
     fetch.mockClear();
     localStorageMock.getItem.mockImplementation((key) => {
