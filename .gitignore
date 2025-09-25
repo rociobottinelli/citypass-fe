@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+.vite/
+
+# Local environment files
+.env
+.env.*.local
+*.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Testing output
+test-output/
+cypress/videos/
+cypress/screenshots/
+playwright-report/
+
+# TypeScript
+*.tsbuildinfo
+
+# ESLint / Prettier
+.eslintcache
+
+# Mac/Linux trash
+.trash/

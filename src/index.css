@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+:root {
+    /* Brand Colors */
+    --brand-primary: 160 100% 37%; /* #04BF8A */
+    --brand-secondary: 140 100% 33%; /* #03A64A */
+    --brand-dark: 160 100% 15%; /* #025940 */
+    
+    /* Base Colors */
+    --background: 0 0% 100%; /* White */
+    --foreground: 0 0% 20%; /* Dark text for contrast */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 0 0% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20%;
+    
+    /* Primary (using brand primary) */
+    --primary: var(--brand-primary);
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    
+    /* Secondary (using brand secondary) */
+    --secondary: var(--brand-secondary);
+    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+    
+    /* Muted (light grey) */
+    --muted: 0 0% 96%; /* Light grey */
+    --muted-foreground: 0 0% 45%; /* Darker grey for text */
+    
+    /* Accent (using brand dark) */
+    --accent: var(--brand-dark);
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+    
+    /* Destructive (red for errors) */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders and inputs (light grey) */
+    --border: 0 0% 90%; /* Light grey borders */
+    --input: 0 0% 90%;
+    --ring: var(--brand-primary); /* Focus ring in brand color */
+    
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode with brand colors */
+    --background: 0 0% 8%; /* Very dark background */
+    --foreground: 0 0% 95%; /* Light text */
+    --card: 0 0% 12%; /* Dark card background */
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* Primary remains the same for brand consistency */
+    --primary: var(--brand-primary);
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: var(--brand-secondary);
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Muted colors for dark mode */
+    --muted: 0 0% 15%; /* Dark grey */
+    --muted-foreground: 0 0% 65%; /* Medium grey text */
+    
+    --accent: var(--brand-dark);
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 0 0% 20%; /* Dark borders */
+    --input: 0 0% 20%;
+    --ring: var(--brand-primary);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
