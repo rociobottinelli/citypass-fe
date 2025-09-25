@@ -121,19 +121,18 @@ const EmergencyButton = () => {
   }
 
   // Countdown timer
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     let interval;
     if (isEmergency && countdown > 0) {
       interval = setInterval(() => {
-        setCountdown(countdown - 1);
+        setCountdown((c) => c - 1);
       }, 1000);
     } else if (countdown === 0 && isEmergency) {
       // Emergency confirmed - dispatch services
       dispatchEmergency();
     }
     return () => clearInterval(interval);
-  }, [isEmergency, countdown]);
+  }, [isEmergency, countdown, dispatchEmergency]);
 
   const handleEmergencyPress = () => {
     if (!isEmergency) {

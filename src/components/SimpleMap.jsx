@@ -177,7 +177,7 @@ const SimpleMap = ({ emergencies }) => {
       isMounted = false
       clearTimeout(timeout)
     }
-  }, [emergencies])
+  }, [emergencies, loadingRef])
 
   if (loading) {
     return (
