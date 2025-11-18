@@ -167,6 +167,52 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async getGoogleAuthUser(token) {
+    console.log('Fetching Google Auth User with token:', token);
+    const response = await fetch(`${this.baseURL}/api/auth/google/callback?token=${token}`);
+    return this.handleResponse(response);
+  }
+
+  async getUserProfileByToken(token) {
+    console.log('Fetching User Profile with JWT:', token);
+
+    const response = await fetch(`${this.baseURL}/api/user/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      // 1. Intenta leer el JSON si la respuesta tiene el Content-Type correcto y no está vacía.
+      const contentType = response.headers.get('content-type');
+      let errorData = {};
+
+      if (contentType && contentType.includes('application/json')) {
+          // Si el servidor envía JSON, lo parseamos
+          errorData = await response.json().catch(() => ({}));
+      } else {
+          // Si la respuesta es HTML o texto (Content-Type diferente a JSON), 
+          // leemos el texto completo para el diagnóstico.
+          const errorText = await response.text();
+          console.error('Error no JSON recibido:', errorText.slice(0, 100) + '...');
+          
+          throw new Error(
+            `Fallo de autenticación o ruta API: El servidor devolvió HTML (Status: ${response.status}).`
+          );
+      }
+      
+      // Lanza el error con información útil
+      throw new Error(
+        errorData.message || 
+        `Error del servidor (${response.status}): Autenticación fallida o ruta no encontrada.`
+      );
+    }
+    
+    // Si la respuesta es OK (2xx), asume JSON
+    return response.json();
+  }
   // Helper method to create emergency data for button press
   createButtonEmergencyData(userId, location) {
     return {

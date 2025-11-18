@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,8 +11,29 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login, loading } = useAuth()
+  const { login, loading, loadUserFromToken } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get("token")
+
+    if (token) {
+      // 1. Llama a la nueva función para autenticar al usuario con el token.
+      loadUserFromToken(token).then((result) => {
+        if (result.success) {
+          // 2. Limpia la URL y redirige SOLAMENTE si el login fue exitoso.
+          window.history.replaceState({}, document.title, "/ciudadano/dashboard");
+          navigate("/ciudadano/dashboard");
+        } else {
+          // Manejar el error si el token no funciona (opcional)
+          setError(result.error || 'Error de autenticación con Google');
+          window.history.replaceState({}, document.title, window.location.pathname); // Limpiar solo el token
+        }
+      });
+      
+    }
+  }, [navigate, loadUserFromToken])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -102,6 +123,15 @@ function Login() {
                 {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </Button>
             </form>
+
+            <Button
+              onClick={() => {
+                window.location.href = "https://citypass.duckdns.org/auth/google";
+              }}
+              className="w-full bg-red-600 text-white mt-4"
+            >
+              Continuar con Google
+            </Button>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">

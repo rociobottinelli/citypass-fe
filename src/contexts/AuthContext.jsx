@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import apiService from '../services/api';
 
 const AuthContext = createContext();
@@ -36,6 +36,37 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, []);
+
+  const loadUserFromToken = async (token) => {
+    setLoading(true);
+    try {
+      localStorage.setItem('token', token);
+      const userDetails = await apiService.getUserProfileByToken(token);
+      if (userDetails && userDetails.id && (userDetails.role || userDetails.rol)) {
+        const user = {
+          id: userDetails.id,
+          email: userDetails.email,
+          role: userDetails.role || userDetails.rol,
+          name: userDetails.name,
+          token: token // Usa el token recibido en la URL
+        };
+        
+        setUser(user);
+        localStorage.setItem('user', JSON.stringify(user));
+        return { success: true, user };
+      } else {
+        console.error('Fallo de validación del perfil:', userDetails);
+        return { success: false, error: 'Respuesta de servidor incompleta o faltan datos del usuario.'+JSON.stringify(userDetails) };
+      }
+    } catch (error) {
+      console.error('Error loading user from token:', error);
+      // Limpia el token si la obtención del perfil falla
+      localStorage.removeItem('token'); 
+      return { success: false, error: error.message || 'Error de conexión con el servidor (al obtener perfil)' };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const login = async (email, password) => {
     setLoading(true);
@@ -104,6 +135,7 @@ export const AuthProvider = ({ children }) => {
     user,
     login,
     logout,
+    loadUserFromToken,
     loading,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'Admin',
