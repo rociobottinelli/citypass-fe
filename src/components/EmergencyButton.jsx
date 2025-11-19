@@ -100,6 +100,7 @@ const EmergencyButton = () => {
       'Incendio': ['Bomberos', 'Ambulancia', 'Policía'],
       'Robo/Violencia': ['Policía', 'Ambulancia'],
       'ViolenciaFamiliar': ['Policía', 'Psicólogo', 'Ambulancia'],
+      'Inundación': ['Defensa Civil', 'Rescatistas', 'Bomberos'],
       'Salud': ['Ambulancia', 'Psicólogo'],
       'Otro': ['Ambulancia', 'Policía']
     };
@@ -265,6 +266,7 @@ const EmergencyButton = () => {
       desastre_natural: <Home className="w-4 h-4" />,
       rescate: <Car className="w-4 h-4" />,
       violencia_domestica: <User className="w-4 h-4" />,
+      inundacion: <AlertTriangle className="w-4 h-4" />,
       otro: <AlertTriangle className="w-4 h-4" />
     };
     return icons[typeId] || <AlertTriangle className="w-4 h-4" />;

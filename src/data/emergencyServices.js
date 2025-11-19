@@ -106,6 +106,12 @@ export const emergencyTypes = [
     description: 'Emergencia médica o psicológica'
   },
   {
+    id: 'Inundacion',
+    name: 'Inundación',
+    services: ['defensa_civil', 'rescatistas', 'bomberos'],
+    description: 'Inundaciones o desbordes de agua'
+  },
+  {
     id: 'Otro',
     name: 'Otro',
     services: ['ambulancia', 'policia'],

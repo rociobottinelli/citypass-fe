@@ -107,6 +107,7 @@ function CiudadanoDashboard() {
       'Incendio': ['Bomberos', 'Ambulancia', 'Policía'],
       'Robo/Violencia': ['Policía', 'Ambulancia'],
       'ViolenciaFamiliar': ['Policía', 'Psicólogo', 'Ambulancia'],
+      'Inundación': ['Defensa Civil', 'Rescatistas', 'Bomberos'],
       'Salud': ['Ambulancia', 'Psicólogo'],
       'Otro': ['Ambulancia', 'Policía']
     };
