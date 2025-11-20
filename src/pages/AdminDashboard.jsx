@@ -532,93 +532,115 @@ function AdminDashboard() {
                         
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-2">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold"
-                                size="sm"
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Ver Detalles Completos
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                                  Emergencia #{latestEmergency.id}
-                                </DialogTitle>
-                                <DialogDescription>
-                                  Información completa de la última emergencia ingresada
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Tipo</label>
-                                    <p className="text-sm font-semibold">{latestEmergency.tipo}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Estado</label>
-                                    <p className="text-sm">{latestEmergency.estado}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Prioridad</label>
-                                    <p className="text-sm">{latestEmergency.prioridad}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Fecha</label>
-                                    <p className="text-sm">{latestEmergency.timestamp.toLocaleString()}</p>
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-gray-500">Ubicación</label>
-                                  {(() => {
-                                    const isCoordinates = latestEmergency.ubicacion && 
-                                      latestEmergency.ubicacion.includes(',') && 
-                                      !latestEmergency.ubicacion.includes('Ubicación') && 
-                                      !latestEmergency.ubicacion.includes('no disponible');
-                                    return isCoordinates;
-                                  })() ? (
-                                    <button
-                                      onClick={() => {
-                                        const [lat, lon] = latestEmergency.ubicacion.split(', ');
-                                        const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
-                                        window.open(googleMapsUrl, '_blank');
-                                      }}
-                                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
-                                      title="Click para abrir en Google Maps"
-                                    >
-                                      {latestEmergency.ubicacion}
-                                    </button>
-                                  ) : (
-                                    <p className="text-sm">{latestEmergency.ubicacion}</p>
-                                  )}
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-gray-500">Ciudadano</label>
-                                  <p className="text-sm">{latestEmergency.ciudadano} - {latestEmergency.telefono}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-gray-500">Servicios</label>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {latestEmergency.servicios.map((service, index) => (
-                                      <Badge key={index} variant="outline" className="text-xs">
-                                        {service}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                                {latestEmergency.detalles && (
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Detalles</label>
-                                    <p className="text-sm bg-gray-50 p-2 rounded">{latestEmergency.detalles}</p>
-                                  </div>
-                                )}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold"
+                            size="sm"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ver Detalles Completos
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="w-5 h-5 text-red-500" />
+                              Emergencia #{latestEmergency.id}
+                            </DialogTitle>
+                            <DialogDescription>
+                              Información completa de la última emergencia ingresada
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Tipo</label>
+                                <p className="text-sm font-semibold">{latestEmergency.tipo}</p>
                               </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Estado</label>
+                                <p className="text-sm">{latestEmergency.estado}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Prioridad</label>
+                                <p className="text-sm">{latestEmergency.prioridad}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Fecha</label>
+                                <p className="text-sm">{latestEmergency.timestamp.toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Ubicación</label>
+                              {(() => {
+                                const isCoordinates = latestEmergency.ubicacion && 
+                                  latestEmergency.ubicacion.includes(',') && 
+                                  !latestEmergency.ubicacion.includes('Ubicación') && 
+                                  !latestEmergency.ubicacion.includes('no disponible');
+                                return isCoordinates;
+                              })() ? (
+                                <button
+                                  onClick={() => {
+                                    const [lat, lon] = latestEmergency.ubicacion.split(', ');
+                                    const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                    window.open(googleMapsUrl, '_blank');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
+                                  title="Click para abrir en Google Maps"
+                                >
+                                  {latestEmergency.ubicacion}
+                                </button>
+                              ) : (
+                                <p className="text-sm">{latestEmergency.ubicacion}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Ciudadano</label>
+                              <p className="text-sm">{latestEmergency.ciudadano} - {latestEmergency.telefono}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Servicios</label>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {latestEmergency.servicios.map((service, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {service}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                            {latestEmergency.detalles && (
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Detalles</label>
+                                <p className="text-sm bg-gray-50 p-2 rounded">{latestEmergency.detalles}</p>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      {latestEmergency.estado === 'Pendiente' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => updateEmergencyStatus(latestEmergency.id, 'En Tratamiento')}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Tomar Emergencia
+                        </Button>
+                      )}
+                      
+                      {latestEmergency.estado === 'En Tratamiento' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => updateEmergencyStatus(latestEmergency.id, 'Resuelta')}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar Resuelta
+                        </Button>
+                      )}
+                    </div>
                       </div>
                     )
                   })()}
