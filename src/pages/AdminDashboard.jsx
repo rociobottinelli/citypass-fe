@@ -29,8 +29,6 @@ import {
   Zap
 } from 'lucide-react'
 
-const DASHBOARD_URL_PUBLIC = "https://dashboard.marianogimenez.ar/plaza-viva?login=false&iframe=true";
-const IFRAME_ID = "citypass-public-dashboard-iframe";
 
 function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -452,10 +450,15 @@ function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   {(() => {
-                    const latestEmergency = emergencies
-                      .filter(e => e.coordenadas && e.coordenadas.lat && e.coordenadas.lng)
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
-                    
+                const latestEmergency = emergencies
+                  .filter(e =>
+                    (e.estado === 'En Tratamiento' || e.estado === 'Pendiente') && // <--- FILTRO POR ESTADO
+                    e.coordenadas &&
+                    e.coordenadas.lat &&
+                    e.coordenadas.lng
+                  )
+                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
+
                     if (!latestEmergency) return null
                     
                     return (
@@ -529,93 +532,115 @@ function AdminDashboard() {
                         
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-2">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold"
-                                size="sm"
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Ver Detalles Completos
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                                  Emergencia #{latestEmergency.id}
-                                </DialogTitle>
-                                <DialogDescription>
-                                  Información completa de la última emergencia ingresada
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Tipo</label>
-                                    <p className="text-sm font-semibold">{latestEmergency.tipo}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Estado</label>
-                                    <p className="text-sm">{latestEmergency.estado}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Prioridad</label>
-                                    <p className="text-sm">{latestEmergency.prioridad}</p>
-                                  </div>
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Fecha</label>
-                                    <p className="text-sm">{latestEmergency.timestamp.toLocaleString()}</p>
-                                  </div>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-gray-500">Ubicación</label>
-                                  {(() => {
-                                    const isCoordinates = latestEmergency.ubicacion && 
-                                      latestEmergency.ubicacion.includes(',') && 
-                                      !latestEmergency.ubicacion.includes('Ubicación') && 
-                                      !latestEmergency.ubicacion.includes('no disponible');
-                                    return isCoordinates;
-                                  })() ? (
-                                    <button
-                                      onClick={() => {
-                                        const [lat, lon] = latestEmergency.ubicacion.split(', ');
-                                        const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
-                                        window.open(googleMapsUrl, '_blank');
-                                      }}
-                                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
-                                      title="Click para abrir en Google Maps"
-                                    >
-                                      {latestEmergency.ubicacion}
-                                    </button>
-                                  ) : (
-                                    <p className="text-sm">{latestEmergency.ubicacion}</p>
-                                  )}
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-gray-500">Ciudadano</label>
-                                  <p className="text-sm">{latestEmergency.ciudadano} - {latestEmergency.telefono}</p>
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium text-gray-500">Servicios</label>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {latestEmergency.servicios.map((service, index) => (
-                                      <Badge key={index} variant="outline" className="text-xs">
-                                        {service}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                                {latestEmergency.detalles && (
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-500">Detalles</label>
-                                    <p className="text-sm bg-gray-50 p-2 rounded">{latestEmergency.detalles}</p>
-                                  </div>
-                                )}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold"
+                            size="sm"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ver Detalles Completos
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="w-5 h-5 text-red-500" />
+                              Emergencia #{latestEmergency.id}
+                            </DialogTitle>
+                            <DialogDescription>
+                              Información completa de la última emergencia ingresada
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Tipo</label>
+                                <p className="text-sm font-semibold">{latestEmergency.tipo}</p>
                               </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Estado</label>
+                                <p className="text-sm">{latestEmergency.estado}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Prioridad</label>
+                                <p className="text-sm">{latestEmergency.prioridad}</p>
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Fecha</label>
+                                <p className="text-sm">{latestEmergency.timestamp.toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Ubicación</label>
+                              {(() => {
+                                const isCoordinates = latestEmergency.ubicacion && 
+                                  latestEmergency.ubicacion.includes(',') && 
+                                  !latestEmergency.ubicacion.includes('Ubicación') && 
+                                  !latestEmergency.ubicacion.includes('no disponible');
+                                return isCoordinates;
+                              })() ? (
+                                <button
+                                  onClick={() => {
+                                    const [lat, lon] = latestEmergency.ubicacion.split(', ');
+                                    const googleMapsUrl = `https://maps.google.com/?q=${lat.trim()},${lon.trim()}`;
+                                    window.open(googleMapsUrl, '_blank');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded underline cursor-pointer transition-colors text-sm"
+                                  title="Click para abrir en Google Maps"
+                                >
+                                  {latestEmergency.ubicacion}
+                                </button>
+                              ) : (
+                                <p className="text-sm">{latestEmergency.ubicacion}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Ciudadano</label>
+                              <p className="text-sm">{latestEmergency.ciudadano} - {latestEmergency.telefono}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium text-gray-500">Servicios</label>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {latestEmergency.servicios.map((service, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {service}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                            {latestEmergency.detalles && (
+                              <div>
+                                <label className="text-sm font-medium text-gray-500">Detalles</label>
+                                <p className="text-sm bg-gray-50 p-2 rounded">{latestEmergency.detalles}</p>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      {latestEmergency.estado === 'Pendiente' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => updateEmergencyStatus(latestEmergency.id, 'En Tratamiento')}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Tomar Emergencia
+                        </Button>
+                      )}
+                      
+                      {latestEmergency.estado === 'En Tratamiento' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => updateEmergencyStatus(latestEmergency.id, 'Resuelta')}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar Resuelta
+                        </Button>
+                      )}
+                    </div>
                       </div>
                     )
                   })()}
@@ -925,30 +950,6 @@ function AdminDashboard() {
               </CardContent>
             </Card>
 
-                  <Card className="mt-6 sm:mt-8 max-w-4xl mx-auto shadow-lg border-blue-100">
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-500" />
-                    Visualización de Plazas y Mantenimiento
-                </CardTitle>
-                <CardDescription>
-                    Vista pública del estado de la ciudad (no requiere autenticación).
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div style={{ height: '500px', width: '100%' }}>
-                  <iframe
-                      id={IFRAME_ID}
-                      src={DASHBOARD_URL_PUBLIC}
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      style={{ border: 'none' }}
-                      title="CityPass Dashboard Público"
-                  />
-                </div>
-              </CardContent>
-            </Card>
       </div>
     </div>
   )
