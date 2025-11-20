@@ -113,6 +113,7 @@ const isPlazaEligible = selectedType === 'Incendio' || selectedType === 'Disturb
       'ViolenciaFamiliar': ['Policía', 'Psicólogo', 'Ambulancia'],
       'Inundación': ['Defensa Civil', 'Rescatistas', 'Bomberos'],
       'Salud': ['Ambulancia', 'Psicólogo'],
+      'Disturbio': ['Policía', 'Ambulancia'],
       'Otro': ['Ambulancia', 'Policía']
     };
     return serviceMapping[tipoEmergencia] || ['Ambulancia', 'Policía'];
@@ -457,7 +458,7 @@ const isPlazaEligible = selectedType === 'Incendio' || selectedType === 'Disturb
             </div>
 
 {/* Nuevo Bloque: Selección de Plaza (Condicional) */}
-{(selectedType === 'Incendio' || selectedType === 'Robo/Violencia') && (
+{(selectedType === 'Incendio' || selectedType === 'Disturbio') && (
   <div className="space-y-4 border-t pt-4 mt-4">
     <h3 className="text-base sm:text-lg font-semibold">Ubicación Específica</h3>
     
