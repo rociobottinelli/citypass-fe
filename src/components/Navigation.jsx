@@ -84,6 +84,12 @@ const Navigation = () => {
           path: '/admin/statistics',
           icon: <BarChart3 className="w-4 h-4" />,
           description: 'Análisis del sistema'
+        },
+        {
+          name: 'BI',
+          path: '/admin/bi',
+          icon: <BarChart3 className="w-4 h-4" />,
+          description: 'Dashboard y estadísticas'
         }
       ];
     }

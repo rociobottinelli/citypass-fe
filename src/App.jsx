@@ -7,6 +7,7 @@ import EmergencyButton from '@/components/EmergencyButton'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import AdminDashboard from '@/pages/AdminDashboard'
 import AdminStatistics from '@/pages/AdminStatistics'
+import AdminBI from '@/pages/AdminBI'
 import OperadorDashboard from '@/pages/OperadorDashboard'
 import CiudadanoDashboard from '@/pages/CiudadanoDashboard'
 
@@ -77,6 +78,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="Admin">
                 <Layout><AdminStatistics /></Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/bi" 
+            element={
+              <ProtectedRoute requiredRole="Admin">
+                <Layout><AdminBI /></Layout>
               </ProtectedRoute>
             } 
           />

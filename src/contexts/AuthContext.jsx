@@ -16,6 +16,27 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // DEVELOPMENT MODE BYPASS - Remove this in production!
+    // To use: Add ?dev=true to URL or set localStorage.setItem('devMode', 'true')
+    const urlParams = new URLSearchParams(window.location.search);
+    const devMode = urlParams.get('dev') === 'true' || localStorage.getItem('devMode') === 'true';
+    
+    if (devMode && process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ DEVELOPMENT MODE: Bypassing authentication');
+      const mockAdminUser = {
+        id: 'dev-admin-001',
+        email: 'admin@citypass.com',
+        role: 'Admin',
+        name: 'Dev Admin',
+        token: 'dev-mock-token'
+      };
+      setUser(mockAdminUser);
+      localStorage.setItem('user', JSON.stringify(mockAdminUser));
+      localStorage.setItem('token', 'dev-mock-token');
+      setLoading(false);
+      return;
+    }
+    
     const savedUser = localStorage.getItem('user');
     const savedToken = localStorage.getItem('token');
     
