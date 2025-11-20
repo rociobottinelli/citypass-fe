@@ -450,10 +450,15 @@ function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   {(() => {
-                    const latestEmergency = emergencies
-                      .filter(e => e.coordenadas && e.coordenadas.lat && e.coordenadas.lng)
-                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
-                    
+                const latestEmergency = emergencies
+                  .filter(e =>
+                    (e.estado === 'En Tratamiento' || e.estado === 'Pendiente') && // <--- FILTRO POR ESTADO
+                    e.coordenadas &&
+                    e.coordenadas.lat &&
+                    e.coordenadas.lng
+                  )
+                  .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0]
+
                     if (!latestEmergency) return null
                     
                     return (
