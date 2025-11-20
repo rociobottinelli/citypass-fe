@@ -31,6 +31,7 @@ const PLAZAS_DATA = [
   { id: 1, name: "Plaza San Martín (Retiro)", lat: -34.5935, lng: -58.3753 },
   { id: 2, name: "Parque Centenario (Caballito)", lat: -34.6067, lng: -58.4348 },
   { id: 3, name: "Plaza Serrano (Palermo)", lat: -34.5880, lng: -58.4264 },
+  { id: 4, name: "Parque los Andes", lat: -34.58864846051746, lng: -58.45092364709881 }
 ];
 
 const isPlazaEligible = selectedType === 'Incendio' || selectedType === 'Disturbio';
