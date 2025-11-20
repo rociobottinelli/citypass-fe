@@ -29,8 +29,6 @@ import {
   Zap
 } from 'lucide-react'
 
-const DASHBOARD_URL_PUBLIC = "https://dashboard.marianogimenez.ar/plaza-viva?login=false&iframe=true";
-const IFRAME_ID = "citypass-public-dashboard-iframe";
 
 function AdminDashboard() {
   const { user, logout } = useAuth()
@@ -925,30 +923,6 @@ function AdminDashboard() {
               </CardContent>
             </Card>
 
-                  <Card className="mt-6 sm:mt-8 max-w-4xl mx-auto shadow-lg border-blue-100">
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-500" />
-                    Visualización de Plazas y Mantenimiento
-                </CardTitle>
-                <CardDescription>
-                    Vista pública del estado de la ciudad (no requiere autenticación).
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div style={{ height: '500px', width: '100%' }}>
-                  <iframe
-                      id={IFRAME_ID}
-                      src={DASHBOARD_URL_PUBLIC}
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      style={{ border: 'none' }}
-                      title="CityPass Dashboard Público"
-                  />
-                </div>
-              </CardContent>
-            </Card>
       </div>
     </div>
   )
