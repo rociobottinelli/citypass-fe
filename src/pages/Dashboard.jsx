@@ -2,6 +2,9 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+const DASHBOARD_URL_PUBLIC = "https://dashboard.marianogimenez.ar/plaza-viva?login=false&iframe=true";
+const IFRAME_ID = "citypass-dashboard-iframe-public";
+
 function Dashboard() {
   const handleLogout = () => {
     window.location.href = '/'
@@ -127,6 +130,27 @@ function Dashboard() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="shadow-lg border-none">
+            <CardHeader>
+                <CardTitle className="text-xl">Dashboard Plaza Viva</CardTitle>
+                <CardDescription>Visualización pública de las plazas y parques de la ciudad.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div style={{ height: '700px', width: '100%' }}>
+                    {/* IFRAME del Dashboard en modo sin autenticación */}
+                    <iframe
+                        id={IFRAME_ID}
+                        src={DASHBOARD_URL_PUBLIC}
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        style={{ border: 'none' }}
+                        title="CityPass Dashboard Publico"
+                    />
+                </div>
+            </CardContent>
+        </Card>
         </div>
       </div>
     </div>
