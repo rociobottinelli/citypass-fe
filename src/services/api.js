@@ -227,39 +227,43 @@ class ApiService {
   }
 
   // Helper method to create emergency data for form
-  createFormEmergencyData(userId, emergencyType, description, location, selectedServices, attachments = []) {
-    const formData = new FormData();
-    formData.append('userId', userId);
-    formData.append('tipoEmergencia', emergencyType);
-    
-    // Ensure description is not empty and has a fallback
-    const finalDescription = description || 'Emergencia reportada desde formulario';
-    formData.append('description', finalDescription);
-    
-    formData.append('location[lat]', location.lat.toString());
-    formData.append('location[lon]', location.lng.toString());
-    formData.append('origen', 'Formulario');
-    
-    // Add selected services
-    if (selectedServices && selectedServices.length > 0) {
-      selectedServices.forEach((service, index) => {
-        formData.append(`servicios[${index}]`, service);
-      });
-    }
-    
-    // Add attachments
-    attachments.forEach((file) => {
-      formData.append('adjuntos', file);
-    });
-    
-    // Debug: Log form data contents
-    console.log('FormData contents:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
-    
-    return formData;
-  }
+  createFormEmergencyData(userId, emergencyType, description, location, contextoToSend, origenToSend, selectedServices = [], attachments = []) { 
+    const formData = new FormData();
+    formData.append('userId', userId);
+    formData.append('tipoEmergencia', emergencyType);
+    
+    // Ensure description is not empty and has a fallback
+    const finalDescription = description || 'Emergencia reportada desde formulario';
+    formData.append('description', finalDescription);
+    
+    // Campos de ubicación (No cambiamos los nombres para no romper el backend)
+    formData.append('location[lat]', location.lat.toString());
+    formData.append('location[lon]', location.lng.toString());
+    
+    // AÑADIDO: Campos de Origen y Contexto (Ahora la función los acepta)
+    formData.append('contexto', contextoToSend || 'plaza');
+    formData.append('origen', origenToSend || 'Formulario');
+    
+    // Add selected services (Garantizamos que selectedServices es un array)
+    if (selectedServices.length > 0) {
+      selectedServices.forEach((service, index) => {
+        formData.append(`servicios[${index}]`, service);
+      });
+    }
+    
+    // Add attachments
+    attachments.forEach((file) => {
+      formData.append('adjuntos', file);
+    });
+    
+    // Debug: Log form data contents
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+    
+    return formData;
+  }
 }
 
 export default new ApiService();

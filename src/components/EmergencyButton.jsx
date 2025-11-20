@@ -24,6 +24,16 @@ const EmergencyButton = () => {
   const [emergencyHistory, setEmergencyHistory] = useState([]);
   const [attachments, setAttachments] = useState([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isPlazaSelected, setIsPlazaSelected] = useState(false);
+const [selectedPlazaCoords, setSelectedPlazaCoords] = useState(null);
+
+const PLAZAS_DATA = [
+  { id: 1, name: "Plaza San Martín (Retiro)", lat: -34.5935, lng: -58.3753 },
+  { id: 2, name: "Parque Centenario (Caballito)", lat: -34.6067, lng: -58.4348 },
+  { id: 3, name: "Plaza Serrano (Palermo)", lat: -34.5880, lng: -58.4264 },
+];
+
+const isPlazaEligible = selectedType === 'Incendio' || selectedType === 'Disturbio';
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -114,6 +124,19 @@ const EmergencyButton = () => {
       return;
     }
 
+    const finalLocation = isPlazaSelected && selectedPlazaCoords 
+        ? selectedPlazaCoords // 1. Si se seleccionó plaza
+        : location;           // 2. Si no, usa el GPS del usuario
+    
+    // El contexto se envía como 'plaza' si se seleccionó, o se deja vacío/default
+    const contextoToSend = isPlazaSelected ? 'plaza' : '';
+
+    let origenToSend = 'Formulario';
+
+    if (contextoToSend === 'plaza') {
+        origenToSend = 'Alerta'; 
+    }
+
     // setIsSubmitting(true);
     
     try {
@@ -121,7 +144,7 @@ const EmergencyButton = () => {
       
       if (selectedType === 'emergencia_general') {
         // Direct button emergency
-        emergencyData = apiService.createButtonEmergencyData(user.id, location);
+        emergencyData = apiService.createButtonEmergencyData(user.id, finalLocation);
         const response = await apiService.createEmergency(emergencyData);
         console.log('Emergency created:', response);
       } else {
@@ -130,9 +153,11 @@ const EmergencyButton = () => {
           userId: user.id,
           selectedType,
           emergencyDetails: emergencyDetails || 'EMPTY DESCRIPTION',
-          location,
+          finalLocation,
           selectedServices,
-          attachments
+          attachments,
+          contextoToSend,
+          origenToSend
         });
         
         // Force a description if empty
@@ -143,7 +168,9 @@ const EmergencyButton = () => {
           user.id,
           selectedType,
           descriptionToSend,
-          location,
+          finalLocation, 
+          contextoToSend,
+          origenToSend,
           selectedServices,
           attachments
         );
@@ -183,7 +210,7 @@ const EmergencyButton = () => {
     } finally {
       // setIsSubmitting(false);
     }
-  }, [user, location, selectedType, emergencyDetails, selectedServices, attachments, navigate]);
+  }, [user, location, selectedType, emergencyDetails, selectedServices, attachments, navigate, isPlazaSelected, selectedPlazaCoords]);
 
   // Countdown timer
   useEffect(() => {
@@ -394,7 +421,7 @@ const EmergencyButton = () => {
           title="Historial de Emergencias"
           description="Tus emergencias reportadas recientemente"
         />
-
+ 
         {/* Service Selection Dialog */}
         <Dialog open={showServiceSelection} onOpenChange={setShowServiceSelection}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
@@ -428,6 +455,56 @@ const EmergencyButton = () => {
               </div>
             </div>
 
+{/* Nuevo Bloque: Selección de Plaza (Condicional) */}
+{(selectedType === 'Incendio' || selectedType === 'Robo/Violencia') && (
+  <div className="space-y-4 border-t pt-4 mt-4">
+    <h3 className="text-base sm:text-lg font-semibold">Ubicación Específica</h3>
+    
+    {/* Checkbox para Plaza */}
+    <div className="flex items-center gap-3">
+      <input
+        type="checkbox"
+        id="isPlaza"
+        checked={isPlazaSelected}
+        onChange={() => setIsPlazaSelected(prev => !prev)}
+        className="form-checkbox h-5 w-5 text-red-600 rounded"
+      />
+      <label htmlFor="isPlaza" className="font-medium text-gray-700">
+        Reportar en una **Plaza** o Parque
+      </label>
+    </div>
+
+    {/* Listado de Plazas (Aparece si el checkbox está marcado) */}
+    {isPlazaSelected && (
+      <select
+        value={selectedPlazaCoords ? selectedPlazaCoords.id : ''}
+        onChange={(e) => {
+          const plaza = PLAZAS_DATA.find(p => p.id === parseInt(e.target.value));
+          setSelectedPlazaCoords(plaza);
+        }}
+        className="w-full p-3 border border-gray-300 rounded-lg text-sm sm:text-base"
+        required
+      >
+        <option value="" disabled>Selecciona una plaza/parque</option>
+        {PLAZAS_DATA.map(plaza => (
+          <option key={plaza.id} value={plaza.id}>
+            {plaza.name} ({plaza.lat}, {plaza.lng})
+          </option>
+        ))}
+      </select>
+    )}
+
+    {/* Muestra un aviso si la selección de plaza reemplazará el GPS */}
+    {isPlazaSelected && (
+        <Alert className="border-blue-500 bg-blue-50">
+            <AlertDescription className="text-blue-800 text-xs sm:text-sm">
+                <MapPin className="w-3 h-3 mr-2 inline-block"/> 
+                Se enviarán las coordenadas de la plaza seleccionada en lugar de tu ubicación GPS.
+            </AlertDescription>
+        </Alert>
+    )}
+  </div>
+)}
             {/* Service Selection */}
             <div className="space-y-4">
               <h3 className="text-base sm:text-lg font-semibold">Servicios de Emergencia</h3>
